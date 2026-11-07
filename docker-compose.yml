@@ -1,0 +1,22 @@
+services:
+  rag-app:
+    build: .
+    container_name: agentic_rag_service
+    ports:
+      - "8000:8000"
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - app_data:/app/data
+      - app_runs:/app/runs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  app_data:
+  app_runs:
