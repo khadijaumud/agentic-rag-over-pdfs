@@ -1,0 +1,22 @@
+# Python and test artefacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Runtime outputs
+runs/
+!starter/runs/
+!starter/runs/*.json
+*.log
+*.tmp
+
+# Locally generated indexes/databases (the repository may retain its seeded DB)
+data/*.db-wal
+data/*.db-shm

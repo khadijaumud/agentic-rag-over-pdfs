@@ -72,6 +72,11 @@ Answer:"""
     messages = [{"role": "user", "content": prompt}]
     llm_resp = call_llm_with_fallback(messages, temperature=0.0)
     answer_text = llm_resp["text"]
+    if llm_resp.get("provider") == "none":
+        answer_text = (
+            "The configured LLM is unavailable. The most relevant report passages are:\n\n"
+            + "\n\n".join(c["content"] for c in retrieved)
+        )
     
     citations = extract_citations_from_text(answer_text, fallback_chunks=retrieved)
     

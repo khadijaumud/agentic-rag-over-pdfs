@@ -6,7 +6,10 @@ services:
       - "8000:8000"
       - "8501:8501"
     env_file:
-      - .env
+      - path: .env
+        required: false
+      - path: starter/.env
+        required: false
     volumes:
       - app_data:/app/data
       - app_runs:/app/runs

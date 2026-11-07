@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
-from src.config import PDF_DIR, DATA_DIR
+from src.config import PDF_DIR, DATA_DIR, MAX_USER_BUDGET_USD
 from src.db import (
     init_db,
     list_documents as db_list_docs,
@@ -85,7 +85,7 @@ async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="defa
     
     # Check user budget ceiling (e.g. $5.00 limit per user)
     spent = get_user_total_cost(x_user_id)
-    if spent >= 5.0:
+    if spent >= MAX_USER_BUDGET_USD:
         raise HTTPException(status_code=429, detail=f"User budget limit reached (${spent:.2f} spent).")
         
     history = get_conversation_history(conv_id, limit=6)
@@ -151,10 +151,19 @@ async def chat_stream(
         yield f"data: {json.dumps({'event': 'start', 'question': question})}\n\n"
         await asyncio.sleep(0.05)
         
-        # Run chat execution in threadpool
+        # Run the synchronous work behind the async endpoint in a worker thread.
         loop = asyncio.get_event_loop()
         req_obj = ChatRequest(question=question, conversation_id=conversation_id, mode=mode)
-        resp_data = await loop.run_in_executor(None, chat, req_obj, x_user_id)
+        try:
+            resp_data = await loop.run_in_executor(
+                None, lambda: asyncio.run(chat(req_obj, x_user_id))
+            )
+        except HTTPException as exc:
+            yield f"data: {json.dumps({'event': 'error', 'status': exc.status_code, 'detail': exc.detail})}\n\n"
+            return
+        except Exception as exc:
+            yield f"data: {json.dumps({'event': 'error', 'status': 500, 'detail': 'Chat service failed.'})}\n\n"
+            return
         
         # Stream agent steps
         for step in resp_data.get("agent_steps", []):
@@ -183,10 +192,13 @@ async def upload_document(
     file: UploadFile = File(...)
 ):
     """Upload a new PDF document and process in the background."""
-    if not file.filename.lower().endswith(".pdf"):
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported.")
-        
-    save_path = PDF_DIR / file.filename
+    safe_filename = Path(file.filename).name
+    if safe_filename != file.filename or safe_filename in {".", ".."}:
+        raise HTTPException(status_code=400, detail="Invalid PDF filename.")
+
+    save_path = PDF_DIR / safe_filename
     PDF_DIR.mkdir(parents=True, exist_ok=True)
     
     with open(save_path, "wb") as f:
@@ -197,9 +209,9 @@ async def upload_document(
     background_tasks.add_task(ingest_pdf_file, save_path, force=True)
     
     return {
-        "filename": file.filename,
+        "filename": safe_filename,
         "status": "pending",
-        "message": f"Document {file.filename} uploaded. Processing in background."
+        "message": f"Document {safe_filename} uploaded. Processing in background."
     }
 
 @app.delete("/documents/{doc_id}")
@@ -241,6 +253,8 @@ class FeedbackRequest(BaseModel):
 @app.post("/feedback")
 async def submit_feedback(fb: FeedbackRequest):
     """Record user thumbs up/down feedback."""
+    if fb.score not in (-1, 1):
+        raise HTTPException(status_code=422, detail="score must be -1 or 1.")
     conn = get_connection()
     with conn:
         conn.execute(

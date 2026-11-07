@@ -140,6 +140,7 @@ def run_agent(
     total_completion_tokens = 0
     total_cost_usd = 0.0
     all_retrieved_chunks = []
+    observations = []
     
     messages = []
     if conversation_history:
@@ -166,6 +167,27 @@ def run_agent(
         total_prompt_tokens += llm_resp["prompt_tokens"]
         total_completion_tokens += llm_resp["completion_tokens"]
         total_cost_usd += llm_resp["cost_usd"]
+
+        if llm_resp.get("provider") == "none":
+            # Keep the application useful and honest without silently inventing an
+            # answer when no remote provider is configured.
+            results = hybrid_search(question, top_k=5)
+            if results:
+                final_answer = (
+                    "The configured LLM is unavailable. Relevant report passages:\n\n"
+                    + "\n\n".join(r["content"] for r in results)
+                )
+                all_retrieved_chunks.extend(results)
+            else:
+                final_answer = "The configured LLM is unavailable, and the reports do not contain a relevant passage."
+            steps.append({
+                "step": step_num,
+                "thought": "No configured LLM provider was available.",
+                "action": "offline_fallback",
+                "action_args": {},
+                "observation": final_answer[:1500],
+            })
+            break
         
         reply_text = llm_resp["text"]
         action, action_args, thought, answer = parse_agent_action(reply_text)
@@ -191,6 +213,7 @@ def run_agent(
                 "action_args": action_args,
                 "observation": observation
             })
+            observations.append(observation)
             messages.append({"role": "assistant", "content": reply_text})
             messages.append({"role": "user", "content": f"Observation: {observation}"})
             continue
@@ -245,7 +268,7 @@ def run_agent(
         messages.append({"role": "user", "content": f"Observation:\n{observation}"})
         
     # If loop ended without final answer, force synthesis
-    if final_answer is None:
+    if final_answer is None and total_cost_usd < PER_TURN_BUDGET_USD:
         messages.append({"role": "user", "content": "You have reached the maximum search steps. Provide your Final Answer now based strictly on the observations above."})
         forced_resp = call_llm_with_fallback(messages, system_prompt=AGENT_SYSTEM_PROMPT, temperature=0.0)
         total_prompt_tokens += forced_resp["prompt_tokens"]
@@ -254,8 +277,13 @@ def run_agent(
         
         _, _, _, forced_ans = parse_agent_action(forced_resp["text"])
         final_answer = forced_ans or forced_resp["text"]
-        
-    citations = extract_citations_from_text(final_answer)
+    elif final_answer is None:
+        final_answer = (
+            "The per-turn budget was reached before a final answer could be generated. "
+            "Available observations:\n\n" + "\n\n".join(observations[-3:])
+        )
+
+    citations = extract_citations_from_text(final_answer, fallback_chunks=all_retrieved_chunks)
     
     return {
         "answer": final_answer,

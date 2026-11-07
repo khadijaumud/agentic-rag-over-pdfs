@@ -19,4 +19,4 @@ COPY . .
 EXPOSE 8000 8501
 
 # Entrypoint script starts both backend and frontend
-CMD ["sh", "-c", "python -m uvicorn src.app:app --host 0.0.0.0 --port 8000 & streamlit run src.ui.py --server.port 8501 --server.address 0.0.0.0"]
+CMD ["sh", "-c", "python -m uvicorn src.app:app --host 0.0.0.0 --port 8000 & exec streamlit run src/ui.py --server.port 8501 --server.address 0.0.0.0"]

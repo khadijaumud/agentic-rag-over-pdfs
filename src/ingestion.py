@@ -12,7 +12,7 @@ from typing import List, Dict, Any, Optional
 from src.parser import parse_pdf
 from src.chunker import chunk_document_pages
 from src.embeddings import embed_texts
-from src.db import save_document, save_chunks, get_connection, get_all_chunks
+from src.db import save_document, save_chunks, delete_document, get_connection, get_all_chunks
 from src.config import PDF_DIR
 
 def ingest_pdf_file(pdf_path: Path, force: bool = False) -> Dict[str, Any]:
@@ -46,7 +46,9 @@ def ingest_pdf_file(pdf_path: Path, force: bool = False) -> Dict[str, Any]:
         for c, emb in zip(chunks, embeddings):
             c["embedding"] = emb
             
-        # Save to SQLite
+        # Replace old chunks so force re-ingestion cannot leave stale pages in the index.
+        delete_document(doc_id)
+        save_document(doc_id=doc_id, filename=doc_id, page_count=0, file_size=file_size, status="processing")
         save_chunks(chunks)
         save_document(doc_id=doc_id, filename=doc_id, page_count=page_count, file_size=file_size, status="ready")
         

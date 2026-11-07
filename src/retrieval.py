@@ -181,7 +181,15 @@ def rerank_passages(
     
     ranker = get_reranker()
     if ranker is None:
-        return candidates[:top_n]
+        # Keep the threshold meaningful when the optional reranker is unavailable.
+        # RRF scores are normalized relative to this shortlist's best result.
+        best_rrf = max((float(c.get("rrf_score", 0.0)) for c in candidates), default=1.0)
+        results = []
+        for candidate in candidates[:top_n]:
+            item = dict(candidate)
+            item["rerank_score"] = float(item.get("rrf_score", 0.0)) / max(best_rrf, 1e-12)
+            results.append(item)
+        return results
     
     try:
         from flashrank import RerankRequest
