@@ -19,6 +19,7 @@ from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
+from urllib.parse import quote
 from pydantic import BaseModel
 
 from src.config import PDF_DIR, DATA_DIR, MAX_USER_BUDGET_USD, MAX_HISTORY_TOKENS
@@ -223,7 +224,12 @@ async def document_file(doc_id: str):
     path = PDF_DIR / document["filename"]
     if not path.is_file():
         raise HTTPException(status_code=404, detail="PDF file is not available.")
-    return FileResponse(path, media_type="application/pdf", filename=document["filename"])
+    filename = str(document["filename"])
+    return FileResponse(
+        path,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"inline; filename*=UTF-8''{quote(filename)}"},
+    )
 
 @app.post("/documents/upload")
 async def upload_document(
@@ -264,6 +270,12 @@ async def delete_document(doc_id: str):
             vector_store.delete_document(doc_id)
         except Exception as exc:
             raise HTTPException(status_code=503, detail="Vector index deletion failed.") from exc
+    pdf_path = PDF_DIR / doc["filename"]
+    if pdf_path.exists():
+        try:
+            pdf_path.unlink()
+        except OSError as exc:
+            raise HTTPException(status_code=503, detail="PDF file deletion failed.") from exc
     db_delete_doc(doc_id)
     return {"status": "deleted", "document": doc_id}
 

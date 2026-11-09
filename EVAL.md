@@ -281,7 +281,7 @@ docker compose ps
 curl http://localhost:8000/health
 ```
 
-The final test suite result was 17 passed with two existing FastAPI deprecation
+The current regression suite result is 26 passed with two existing FastAPI deprecation
 warnings. Tests mock LLM calls where noted in the test module; they do not
 prove Gemini quality. Docker Desktop was running, the rebuilt container
 reported healthy, and `/health` reported 14 ready documents before and after

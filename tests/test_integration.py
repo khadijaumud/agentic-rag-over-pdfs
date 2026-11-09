@@ -56,6 +56,7 @@ def test_pdf_file_endpoint(tmp_path, monkeypatch):
     resp = client.get("/documents/RWE AG.pdf/file")
     assert resp.status_code == 200
     assert resp.headers["content-type"] == "application/pdf"
+    assert resp.headers["content-disposition"].startswith("inline;")
 
 def test_chat_pipeline_mode():
     mock_llm_response = {

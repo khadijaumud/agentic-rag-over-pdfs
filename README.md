@@ -86,6 +86,12 @@ chunks and FTS5. `/documents/reindex` rebuilds embeddings from SQLite.
 `/chat/stream` emits SSE events for agent steps, answer tokens, citations, and
 usage.
 
+Streamlit's standard `st.file_uploader` buffers the selected file before the
+frontend can issue the multipart request, so it does not expose trustworthy
+byte-level upload progress. The UI therefore reports the selected file and
+the backend's real `pending`/`processing`/`ready`/`failed` status rather than
+displaying fabricated percentage progress.
+
 ## Evaluation
 
 The fixed scorer is `starter/eval.py`; it must not be changed below its

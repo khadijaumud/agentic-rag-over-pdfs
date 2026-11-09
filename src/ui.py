@@ -1,13 +1,12 @@
-"""Premium Streamlit workspace for the Agentic RAG research assistant.
+"""Streamlit frontend for the Agentic RAG research workspace."""
 
-This module is presentation-only. It uses the existing FastAPI contracts for
-chat, conversations, documents, ingestion, citations, and feedback.
-"""
+from __future__ import annotations
 
 import html
+import json
 import time
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from urllib.parse import quote
-from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 import streamlit as st
@@ -26,274 +25,225 @@ st.set_page_config(
 st.markdown(
     """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-
 :root {
-  --sidebar: #101725;
-  --sidebar-2: #172235;
   --ink: #172033;
-  --muted: #748198;
-  --line: #e7ebf2;
-  --canvas: #f7f8fb;
+  --muted: #5f6b7d;
+  --subtle: #f4f6fa;
+  --line: #dce3ed;
   --panel: #ffffff;
-  --purple: #6658d9;
-  --purple-soft: #eeecff;
-  --blue: #3878ed;
-  --green: #159570;
-  --amber: #bd7d19;
-  --red: #c84b5f;
+  --accent: #2167d5;
+  --accent-dark: #174ca2;
+  --accent-soft: #eaf2ff;
+  --success: #147a55;
+  --warning: #986316;
+  --danger: #b3344a;
+}
+html, body, [class*="css"] { color: var(--ink); }
+.stApp { background: #f4f6fa; color: var(--ink); }
+.stApp, .stApp * { box-sizing: border-box; }
+.block-container { max-width: 1780px; padding: 1.15rem 1.4rem 2.5rem; }
+[data-testid="stDecoration"] {
+  display: none !important;
 }
 
-.stApp {
-  background: var(--canvas);
+/* Streamlit's sidebar has both a root and an inner scrolling container. */
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] > div:first-child,
+[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+  background: #ffffff !important;
+  color: var(--ink) !important;
+}
+[data-testid="stSidebar"] > div:first-child {
+  border-right: 1px solid var(--line) !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] div {
   color: var(--ink);
-  font-family: "DM Sans", sans-serif;
 }
-.block-container {
-  max-width: 1540px;
-  padding: 0.9rem 2rem 3.5rem;
+[data-testid="stSidebar"] [data-testid="stButton"] > button,
+[data-testid="stSidebar"] [data-testid="stDownloadButton"] > button {
+  min-height: 2.35rem;
+  height: auto !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  border: 1px solid var(--line) !important;
+  border-radius: .55rem !important;
+  background: #ffffff !important;
+  color: var(--ink) !important;
+  font-weight: 650 !important;
+  box-shadow: none !important;
 }
-.stApp h1, .stApp h2, .stApp h3, .stApp h4 {
-  color: var(--ink);
-  font-family: "Space Grotesk", sans-serif;
-  letter-spacing: -0.025em;
+[data-testid="stSidebar"] [data-testid="stButton"] > button:hover,
+[data-testid="stSidebar"] [data-testid="stDownloadButton"] > button:hover {
+  border-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  color: var(--accent-dark) !important;
 }
-button, input, textarea { font-family: "DM Sans", sans-serif; }
-
-/* Refined dark navigation rail */
-[data-testid="stSidebar"] {
-  background: var(--sidebar);
-  border-right: 1px solid #202c41;
+[data-testid="stSidebar"] [data-testid="stButton"] > button:focus-visible,
+[data-testid="stSidebar"] [data-testid="stDownloadButton"] > button:focus-visible,
+[data-testid="stButton"] > button:focus-visible,
+[data-testid="stChatInput"] textarea:focus {
+  outline: 3px solid #b9d1ff !important;
+  outline-offset: 1px;
 }
-[data-testid="stSidebar"] * { color: #dce5f5; }
-[data-testid="stSidebar"] .stCaption { color: #8998b0; }
-[data-testid="stSidebar"] .stButton button {
-  background: transparent;
-  border: 1px solid #2b3a54;
-  color: #dce5f5;
-  min-height: 2.25rem;
+[data-testid="stSidebar"] [data-testid="stButton"] > button:disabled,
+[data-testid="stButton"] > button:disabled {
+  background: #eef1f5 !important;
+  border-color: #d8dee8 !important;
+  color: #8a94a5 !important;
+  opacity: 1 !important;
 }
-[data-testid="stSidebar"] .stButton button:hover {
-  background: var(--sidebar-2);
-  border-color: #6877ff;
-  color: white;
-}
-[data-testid="stSidebar"] [data-baseweb="radio"] label {
-  border: 1px solid #2b3a54;
-  border-radius: 9px;
-  background: #141e2e;
-  padding: 0.52rem 0.65rem;
-}
-[data-testid="stSidebar"] [data-baseweb="radio"] label:has(input:checked) {
-  border-color: #716cff;
-  background: #29284d;
+[data-testid="stSidebar"] [data-testid="stButton"] > button p {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  text-overflow: clip !important;
+  line-height: 1.3 !important;
 }
 [data-testid="stSidebar"] [data-testid="stFileUploader"] {
-  border: 1px dashed #3b4b67;
-  border-radius: 10px;
-  background: #141e2e;
+  border: 1px solid #c9d8ee !important;
+  border-radius: .7rem !important;
+  background: #f7faff !important;
+  padding: .55rem !important;
+}
+[data-testid="stSidebar"] [data-testid="stFileUploader"] section,
+[data-testid="stSidebar"] [data-testid="stFileUploader"] section > div {
+  background: transparent !important;
+  border: 0 !important;
+}
+[data-testid="stSidebar"] [data-testid="stFileUploader"] small,
+[data-testid="stSidebar"] [data-testid="stFileUploader"] span {
+  color: var(--muted) !important;
+}
+[data-testid="stSidebar"] [data-testid="stFileUploader"] button {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: .45rem !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label {
+  color: var(--ink) !important;
+  background: #f7f9fc !important;
+  border: 1px solid var(--line) !important;
+  border-radius: .5rem !important;
+  padding: .55rem .65rem !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
+  background: var(--accent-soft) !important;
+  border-color: #9dbcf0 !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] {
+  gap: .45rem !important;
+}
+[data-testid="stSidebar"] [data-testid="stRadio"] [data-testid="stMarkdownContainer"] p {
+  color: var(--ink) !important;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.15rem 0 1.15rem;
+[data-testid="stButton"] > button {
+  min-height: 2.45rem;
+  height: auto !important;
+  overflow: visible !important;
+  white-space: normal !important;
+  border: 1px solid var(--line) !important;
+  border-radius: .6rem !important;
+  background: #ffffff !important;
+  color: var(--ink) !important;
+  font-weight: 650 !important;
+  box-shadow: 0 1px 2px rgba(20, 34, 58, .04) !important;
 }
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  background: #6960e7;
-  color: white;
-  font: 700 1.05rem "Space Grotesk", sans-serif;
+[data-testid="stButton"] > button p {
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  text-overflow: clip !important;
+  line-height: 1.3 !important;
 }
-.brand-title { color: white; font: 700 1rem "Space Grotesk", sans-serif; }
-.brand-subtitle { color: #8d9bb2; font-size: 0.68rem; margin-top: 0.12rem; }
-.rail-label, .context-label {
-  color: #8998b0;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin: 1rem 0 0.48rem;
+[data-testid="stButton"] > button:hover {
+  background: var(--accent-soft) !important;
+  border-color: #8eb0eb !important;
+  color: var(--accent-dark) !important;
 }
-.conversation-empty {
-  color: #8796ad;
-  font-size: 0.76rem;
-  padding: 0.5rem 0;
+[data-testid="stChatInput"] {
+  border: 1px solid #b8c5d8 !important;
+  border-radius: .8rem !important;
+  background: #ffffff !important;
+  box-shadow: 0 5px 18px rgba(24, 47, 86, .08) !important;
 }
-.conversation-item {
-  border-left: 2px solid #5564e7;
-  color: #f0f3fb;
-  font-size: 0.78rem;
-  overflow: hidden;
-  padding: 0.38rem 0.55rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+[data-testid="stChatInput"] textarea {
+  color: var(--ink) !important;
+  background: #ffffff !important;
 }
-.conversation-meta { color: #8492a8; font-size: 0.66rem; padding-left: 0.55rem; }
-.doc-row {
-  border-bottom: 1px solid #27344a;
-  padding: 0.48rem 0;
+[data-testid="stChatInput"] textarea::placeholder { color: #738096 !important; }
+[data-testid="stChatInput"] button {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-radius: .5rem !important;
 }
-.doc-name {
-  color: #edf2fb;
-  font-size: 0.75rem;
-  overflow-wrap: anywhere;
+[data-testid="stChatInput"] button:hover { background: var(--accent-dark) !important; }
+[data-testid="stExpander"] {
+  border: 1px solid var(--line) !important;
+  border-radius: .65rem !important;
+  background: #ffffff !important;
 }
-.doc-meta { color: #8190a8; font-size: 0.65rem; margin-top: 0.13rem; }
-.ready { color: #67ddb2; }
-.processing { color: #f1c36d; }
-.failed { color: #ff8497; }
-
-/* Workspace header and status */
-.workspace-header {
-  align-items: center;
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1.15rem;
-  padding: 0.15rem 0 0.9rem;
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] summary span { color: var(--ink) !important; }
+[data-testid="stAlert"] {
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
 }
-.workspace-kicker {
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-.workspace-title { font: 700 1.2rem "Space Grotesk", sans-serif; margin-top: 0.18rem; }
-.health {
-  align-items: center;
-  color: var(--green);
-  display: flex;
-  font-size: 0.76rem;
-  gap: 0.38rem;
-}
-.health-dot { background: var(--green); border-radius: 50%; height: 7px; width: 7px; }
-.thread-intro {
-  color: var(--muted);
-  font-size: 0.86rem;
-  line-height: 1.55;
-  margin: 0.2rem 0 1.1rem;
-}
-.mode-chip {
-  background: var(--purple-soft);
-  border: 1px solid #dad6ff;
-  border-radius: 999px;
-  color: #4f45ae;
-  display: inline-block;
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 0.28rem 0.58rem;
+[data-testid="stTextInput"] input,
+[data-testid="stSelectbox"] [role="combobox"] {
+  background: #ffffff !important;
+  color: var(--ink) !important;
+  border-color: #b8c5d8 !important;
 }
 
-/* Message canvas */
-.stChatMessage {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: 0 5px 16px rgba(28, 41, 74, 0.035);
-  margin: 0.65rem 0;
-}
-.stChatMessage [data-testid="stMarkdownContainer"] { line-height: 1.68; }
-.user-message {
-  color: #334159;
-  font-size: 0.86rem;
-  line-height: 1.55;
-}
-.answer-kicker {
-  color: var(--purple);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.38rem;
-  text-transform: uppercase;
-}
-.refusal-kicker { color: var(--amber); }
-.evidence-count {
-  color: var(--muted);
-  font-size: 0.7rem;
-  margin-top: 0.7rem;
-}
-.context-panel {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 1rem;
-}
-.context-panel h3 { font-size: 0.96rem; margin: 0 0 0.3rem; }
-.context-copy { color: var(--muted); font-size: 0.75rem; line-height: 1.5; }
-.source-card {
-  background: #fbfcff;
-  border: 1px solid #dfe5f0;
-  border-left: 3px solid var(--purple);
-  border-radius: 10px;
-  margin: 0.5rem 0;
-  padding: 0.65rem 0.72rem;
-}
-.source-name { color: var(--ink); font-size: 0.77rem; font-weight: 700; overflow-wrap: anywhere; }
-.source-page { color: var(--purple); font-size: 0.69rem; margin-top: 0.18rem; }
-.source-selected { background: #f1efff; border-color: #cfcaff; }
-.timeline {
-  border-left: 1px solid #d9deea;
-  margin: 0.6rem 0 0.4rem 0.28rem;
-  padding-left: 0.9rem;
-}
-.timeline-step { margin: 0 0 0.9rem; position: relative; }
-.timeline-step:before {
-  background: var(--purple);
-  border: 3px solid white;
-  border-radius: 50%;
-  content: "";
-  height: 7px;
-  left: -1.16rem;
-  position: absolute;
-  top: 0.28rem;
-  width: 7px;
-}
-.timeline-title { color: var(--ink); font-size: 0.73rem; font-weight: 700; }
-.timeline-copy { color: var(--muted); font-size: 0.69rem; line-height: 1.45; margin-top: 0.16rem; }
-.metric {
-  border-top: 1px solid var(--line);
-  display: flex;
-  justify-content: space-between;
-  padding: 0.55rem 0;
-}
-.metric-label { color: var(--muted); font-size: 0.7rem; }
-.metric-value { color: var(--ink); font-size: 0.73rem; font-weight: 700; }
-.empty-workspace {
-  border: 1px dashed #cfd6e4;
-  border-radius: 14px;
-  color: var(--muted);
-  padding: 2.2rem 1.3rem;
-  text-align: center;
-}
-.empty-workspace strong { color: var(--ink); display: block; font-size: 1rem; margin-bottom: 0.3rem; }
-div[data-testid="stExpander"] {
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-}
-@media (max-width: 1050px) {
-  .block-container { padding: 0.8rem 1rem 3rem; }
-}
+.brand { display: flex; gap: .7rem; align-items: center; padding: .15rem .1rem 1rem; }
+.brand-mark { width: 2.15rem; height: 2.15rem; display: grid; place-items: center; border-radius: .65rem; background: var(--accent); color: #fff !important; font-weight: 800; }
+.brand-name { color: var(--ink) !important; font-size: 1.1rem; font-weight: 800; letter-spacing: -.02em; }
+.brand-subtitle { color: var(--muted) !important; font-size: .72rem; margin-top: .12rem; }
+.section-label { color: #536176 !important; font-size: .66rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin: 1rem 0 .45rem; }
+.upload-card { border: 1px solid #c8d8ef; border-radius: .75rem; background: #f5f9ff; padding: .8rem; margin-bottom: .65rem; }
+.upload-card strong { color: #17458f !important; display: block; font-size: .9rem; margin-bottom: .2rem; }
+.upload-card span { color: var(--muted) !important; font-size: .74rem; line-height: 1.4; }
+.library-summary { display: flex; justify-content: space-between; border: 1px solid var(--line); border-radius: .65rem; padding: .6rem .7rem; background: var(--subtle); font-size: .77rem; }
+.library-summary strong { color: var(--success) !important; }
+.doc-item { border-bottom: 1px solid #edf0f4; padding: .55rem .05rem; }
+.doc-name { color: var(--ink) !important; font-size: .78rem; font-weight: 650; overflow-wrap: anywhere; line-height: 1.35; }
+.doc-link, .doc-link:visited { color: var(--accent) !important; text-decoration: none; }
+.doc-link:hover, .doc-link:focus-visible { color: var(--accent-dark) !important; text-decoration: underline; }
+.doc-meta { color: var(--muted) !important; font-size: .68rem; margin-top: .16rem; }
+.status-ready { color: var(--success) !important; } .status-processing, .status-pending { color: var(--warning) !important; } .status-failed { color: var(--danger) !important; }
+.workspace-head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; border-bottom: 1px solid var(--line); padding-bottom: .9rem; margin-bottom: 1.05rem; }
+.eyebrow { color: var(--muted) !important; font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.workspace-title { color: var(--ink) !important; font-size: 1.4rem; font-weight: 800; letter-spacing: -.03em; margin-top: .2rem; overflow-wrap: anywhere; }
+.health { color: var(--success) !important; font-size: .78rem; white-space: nowrap; padding-top: .35rem; } .health.offline { color: var(--danger) !important; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: .9rem; padding: 1rem; box-shadow: 0 5px 18px rgba(31, 45, 75, .04); }
+.panel-title { color: var(--ink) !important; font-size: .95rem; font-weight: 800; margin-bottom: .2rem; }
+.panel-subtitle { color: var(--muted) !important; font-size: .76rem; line-height: 1.5; }
+.mode-badge { display: inline-flex; border: 1px solid #b8d0f7; color: #174c9e !important; background: var(--accent-soft); border-radius: 999px; font-size: .72rem; font-weight: 800; padding: .3rem .6rem; }
+.empty-state { border: 1px dashed #b9c8dc; border-radius: .8rem; padding: 2rem 1.2rem; text-align: center; color: var(--muted) !important; background: #fbfcfe; margin-bottom: 1rem; }
+.empty-state strong { display: block; color: var(--ink) !important; font-size: 1.08rem; margin-bottom: .4rem; }
+.stChatMessage { border: 1px solid var(--line); border-radius: .8rem; background: #ffffff; box-shadow: 0 3px 12px rgba(31, 45, 75, .03); margin: .65rem 0; }
+.answer-label { color: var(--accent-dark) !important; font-size: .66rem; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .35rem; }
+.answer-label.refusal { color: var(--warning) !important; }
+.source-chip { display: inline-block; border: 1px solid #c6d6ef; background: #f5f8ff; border-radius: .45rem; color: #174c9e !important; font-size: .72rem; margin: .25rem .25rem 0 0; padding: .28rem .45rem; }
+.trace-step { border-left: 2px solid #9dbcf0; padding: 0 0 .8rem .75rem; margin: .2rem 0; }
+.trace-dot { color: var(--accent-dark) !important; font-size: .68rem; font-weight: 850; text-transform: uppercase; }
+.trace-copy { color: var(--ink) !important; font-size: .74rem; line-height: 1.45; margin-top: .18rem; }
+.trace-meta { color: var(--muted) !important; font-size: .66rem; margin-top: .25rem; }
+.metric-row { display: flex; justify-content: space-between; border-top: 1px solid #eef1f5; padding: .5rem 0; font-size: .72rem; }
+.metric-row span:first-child { color: var(--muted) !important; } .metric-row span:last-child { color: var(--ink) !important; font-weight: 750; }
+@media (max-width: 900px) { .block-container { padding: .8rem .7rem 2rem; } .workspace-head { display: block; } .health { padding-top: .6rem; } }
 </style>
 """,
     unsafe_allow_html=True,
 )
 
 
-def api_json(
-    method: str,
-    path: str,
-    *,
-    timeout: int = 10,
-    **kwargs: Any,
-) -> Tuple[Optional[Any], Optional[str]]:
+def api_json(method: str, path: str, *, timeout: int = 10, **kwargs: Any) -> Tuple[Optional[Any], Optional[str]]:
     try:
         response = requests.request(method, f"{API_URL}{path}", timeout=timeout, **kwargs)
         if response.status_code >= 400:
@@ -303,15 +253,15 @@ def api_json(
         return None, str(exc)
 
 
-def new_conversation() -> None:
+def reset_thread() -> None:
     st.session_state.conversation_id = f"conv_{int(time.time())}"
-    st.session_state.messages = []
     st.session_state.conversation_title = "New research thread"
+    st.session_state.messages = []
     st.session_state.selected_source = None
 
 
 def load_conversation(conversation_id: str, title: str) -> None:
-    data, error = api_json("GET", f"/conversations/{conversation_id}", timeout=10)
+    data, error = api_json("GET", f"/conversations/{quote(conversation_id, safe='')}")
     if error:
         st.session_state.connection_error = f"Conversation could not be loaded: {error}"
         return
@@ -323,200 +273,246 @@ def load_conversation(conversation_id: str, title: str) -> None:
 
 
 def get_conversations() -> Tuple[List[Dict[str, Any]], Optional[str]]:
-    data, error = api_json("GET", f"/conversations?user_id={USER_ID}", timeout=8)
+    data, error = api_json("GET", f"/conversations?user_id={quote(USER_ID)}", timeout=8)
     return (data if isinstance(data, list) else []), error
 
 
 def is_refusal(text: str) -> bool:
-    lowered = text.lower()
-    markers = (
-        "cannot answer",
-        "can't answer",
-        "not found in the",
-        "no relevant",
-        "insufficient evidence",
-        "does not contain",
-    )
-    return any(marker in lowered for marker in markers)
+    markers = ("cannot answer", "can't answer", "not found in the", "no relevant", "insufficient evidence", "does not contain", "not available", "not mentioned")
+    return any(marker in text.lower() for marker in markers)
 
 
-def render_sources(citations: List[Dict[str, Any]], prefix: str) -> None:
+def citation_key(citation: Dict[str, Any]) -> Tuple[str, Any]:
+    return str(citation.get("document") or citation.get("doc") or "Unknown document"), citation.get("page", "?")
+
+
+def render_citations(citations: List[Dict[str, Any]], prefix: str) -> None:
     if not citations:
         return
-    st.markdown(
-        f'<div class="evidence-count">{len(citations)} grounded source'
-        f'{"s" if len(citations) != 1 else ""}</div>',
-        unsafe_allow_html=True,
-    )
-    source_columns = st.columns(min(len(citations), 3))
+    st.caption(f"{len(citations)} grounded source{'s' if len(citations) != 1 else ''}")
+    columns = st.columns(min(len(citations), 3))
     for index, citation in enumerate(citations):
-        document = str(citation.get("document") or citation.get("doc") or "Unknown document")
-        page = citation.get("page", "?")
-        with source_columns[index % len(source_columns)]:
-            if st.button(
-                f"◈ {document} · p.{page}",
-                key=f"{prefix}-source-{index}",
-                use_container_width=True,
-                help="Inspect this citation in the research context panel.",
-            ):
-                st.session_state.selected_source = {
-                    "document": document,
-                    "page": page,
-                }
+        document, page = citation_key(citation)
+        with columns[index % len(columns)]:
+            if st.button(f"◈ {document} · p.{page}", key=f"{prefix}-citation-{index}", use_container_width=True, help="Show the extracted passage and open the original PDF."):
+                st.session_state.selected_source = {"document": document, "page": page}
                 st.rerun()
 
 
-def render_timeline(steps: List[Dict[str, Any]], expanded: bool = False) -> None:
+def render_trace(steps: List[Dict[str, Any]]) -> None:
     if not steps:
+        st.markdown('<div class="panel-subtitle">Agent searches and tool activity will appear here after the first question.</div>', unsafe_allow_html=True)
         return
-    with st.expander(
-        f"Research activity · {len(steps)} step{'s' if len(steps) != 1 else ''}",
-        expanded=expanded,
-    ):
-        timeline_html = ['<div class="timeline">']
-        for step in steps:
-            action = html.escape(str(step.get("action") or "Synthesis"))
-            thought = html.escape(
-                str(step.get("thought") or "Working with retrieved evidence.")
-            )
-            timeline_html.append(
-                f'<div class="timeline-step"><div class="timeline-title">{action}</div>'
-                f'<div class="timeline-copy">{thought}</div></div>'
-            )
-        timeline_html.append("</div>")
-        st.markdown("".join(timeline_html), unsafe_allow_html=True)
-        for index, step in enumerate(steps):
-            action = step.get("action")
-            observation = step.get("observation")
-            if action and action != "Final Answer":
-                with st.expander(f"Tool details · step {step.get('step', index + 1)}"):
-                    st.code(
-                        f"Action: {action}\nArgs: {step.get('action_args', {})}",
-                        language="json",
-                    )
-                    if step.get("usage"):
-                        st.json(step["usage"])
-                    if observation:
-                        st.caption(str(observation)[:900])
-
-
-def render_usage(usage: Dict[str, Any]) -> None:
-    if not usage:
-        return
-    st.markdown(
-        '<div class="metric"><span class="metric-label">Tokens</span>'
-        f'<span class="metric-value">{usage.get("prompt_tokens", 0):,} in · '
-        f'{usage.get("completion_tokens", 0):,} out</span></div>'
-        '<div class="metric"><span class="metric-label">Estimated cost</span>'
-        f'<span class="metric-value">${usage.get("usd", 0.0):.5f}</span></div>',
-        unsafe_allow_html=True,
-    )
-
-
-def render_feedback(message_id: Optional[str], prefix: str) -> None:
-    if not message_id:
-        return
-    left, right = st.columns([1, 1])
-    with left:
-        if st.button("Helpful", key=f"{prefix}-up", help="Send positive feedback"):
-            api_json(
-                "POST",
-                "/feedback",
-                json={"message_id": message_id, "score": 1},
-                timeout=8,
-            )
-            st.toast("Thanks for the feedback.")
-    with right:
-        if st.button("Needs work", key=f"{prefix}-down", help="Send negative feedback"):
-            api_json(
-                "POST",
-                "/feedback",
-                json={"message_id": message_id, "score": -1},
-                timeout=8,
-            )
-            st.toast("Feedback recorded.")
-
-
-def render_document_library(documents: List[Dict[str, Any]]) -> None:
-    ready = sum(document.get("status") == "ready" for document in documents)
-    st.markdown(
-        f'<div class="rail-label">Document library · {ready}/{len(documents)} ready</div>',
-        unsafe_allow_html=True,
-    )
-    if not documents:
+    st.caption(f"{len(steps)} recorded step{'s' if len(steps) != 1 else ''} · chronological")
+    for index, step in enumerate(steps):
+        action = str(step.get("action") or "synthesis")
+        thought = str(step.get("thought") or step.get("observation") or "Working with report evidence.")
+        usage = step.get("usage") or {}
+        meta: List[str] = []
+        if usage.get("provider") or usage.get("model"):
+            meta.append(f"{usage.get('provider', '')} · {usage.get('model', '')}".strip(" ·"))
+        if usage.get("latency_seconds") is not None:
+            meta.append(f"{usage['latency_seconds']:.2f}s")
+        if usage.get("cost_usd") is not None:
+            meta.append(f"${usage['cost_usd']:.5f}")
+        if usage.get("prompt_tokens") or usage.get("completion_tokens"):
+            meta.append(f"{usage.get('prompt_tokens', 0):,} in / {usage.get('completion_tokens', 0):,} out")
         st.markdown(
-            '<div class="conversation-empty">Your indexed reports will appear here.</div>',
+            f'<div class="trace-step"><div class="trace-dot">{index + 1:02d} · {html.escape(action.replace("_", " "))}</div>'
+            f'<div class="trace-copy">{html.escape(thought[:700])}</div><div class="trace-meta">{html.escape(" · ".join(meta))}</div></div>',
             unsafe_allow_html=True,
         )
+        if step.get("action_args") or step.get("observation"):
+            with st.expander("Inspect tool call and observation", expanded=False):
+                if step.get("action_args"):
+                    st.json(step["action_args"])
+                if step.get("observation"):
+                    st.caption(str(step["observation"])[:1500])
+
+
+def render_usage(messages: Iterable[Dict[str, Any]]) -> None:
+    prompt = completion = 0
+    cost = 0.0
+    has_usage = False
+    for message in messages:
+        usage = message.get("usage") or {}
+        if usage:
+            has_usage = True
+        prompt += usage.get("prompt_tokens", 0)
+        completion += usage.get("completion_tokens", 0)
+        cost += usage.get("usd", 0.0)
+    if not has_usage:
+        return
+    st.markdown(
+        f'<div class="metric-row"><span>Thread tokens</span><span>{prompt:,} in · {completion:,} out</span></div>'
+        f'<div class="metric-row"><span>Estimated cost</span><span>${cost:.5f}</span></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def render_selected_source() -> None:
+    selected = st.session_state.selected_source
+    if not selected:
+        st.markdown('<div class="panel-subtitle">Select a citation to inspect its passage and open the source PDF.</div>', unsafe_allow_html=True)
+        return
+    document = str(selected["document"])
+    raw_page = selected["page"]
+    try:
+        page = int(raw_page)
+    except (TypeError, ValueError):
+        page = None
+    st.markdown(f"**{html.escape(document)} · page {html.escape(str(raw_page))}**")
+    if page is not None and page > 0:
+        st.link_button("Open original PDF at this page", f"{API_URL}/documents/{quote(document, safe='')}/file#page={page}", use_container_width=True)
+        passage, error = api_json("GET", f"/documents/{quote(document, safe='')}/pages/{page}", timeout=10)
+        if error:
+            st.error(f"Could not load cited passage: {error}")
+        else:
+            for text in passage.get("passages", []):
+                st.code(text, language="text")
+
+
+def render_library(documents: List[Dict[str, Any]]) -> None:
+    ready = sum(document.get("status") == "ready" for document in documents)
+    st.markdown(f'<div class="library-summary"><span>Document library</span><strong>{ready}/{len(documents)} ready</strong></div>', unsafe_allow_html=True)
+    if not documents:
+        st.info("No reports are indexed yet. Upload a PDF to begin.")
         return
     for document in documents:
-        status = document.get("status", "unknown")
-        status_class = status if status in {"ready", "processing", "failed"} else "processing"
-        icon = "●" if status == "ready" else "○"
-        filename = html.escape(str(document.get("filename", "Untitled")))
+        status = str(document.get("status", "unknown"))
+        status_class = f"status-{status}" if status in {"ready", "processing", "pending", "failed"} else ""
+        filename = str(document.get("filename", "Untitled"))
+        name_html = html.escape(filename)
+        if status == "ready":
+            document_id = str(document.get("id") or filename)
+            href = f"{API_URL}/documents/{quote(document_id, safe='')}/file"
+            name_html = (
+                f'<a class="doc-link" href="{html.escape(href, quote=True)}" '
+                f'target="_blank" rel="noopener" title="Open {html.escape(filename, quote=True)}">{name_html}</a>'
+            )
         st.markdown(
-            f'<div class="doc-row"><div class="doc-name"><span class="{status_class}">'
-            f'{icon}</span>&nbsp; {filename}</div><div class="doc-meta">'
-            f'{document.get("page_count", "—")} pages · {html.escape(status)}</div></div>',
+            f'<div class="doc-item"><div class="doc-name">{name_html}</div>'
+            f'<div class="doc-meta"><span class="{status_class}">● {html.escape(status.title())}</span> · {document.get("page_count", "—")} pages</div></div>',
             unsafe_allow_html=True,
         )
 
 
-def submit_question(question: str) -> None:
-    question = question.strip()
-    if not question:
-        return
-    st.session_state.messages.append({"role": "user", "content": question})
-    payload = {
+def stream_question(question: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    params = {
         "question": question,
         "conversation_id": st.session_state.conversation_id,
         "mode": st.session_state.mode,
     }
-    data, error = api_json(
-        "POST",
-        "/chat",
-        timeout=120,
-        json=payload,
-        headers={"X-User-Id": USER_ID},
-    )
-    if error:
-        st.session_state.messages.append(
-            {
-                "role": "assistant",
-                "content": f"The research service could not complete this request. {error}",
-                "error": True,
-            }
-        )
+    answer_parts: List[str] = []
+    steps: List[Dict[str, Any]] = []
+    done: Dict[str, Any] = {}
+
+    try:
+        with requests.get(
+            f"{API_URL}/chat/stream",
+            params=params,
+            headers={"X-User-Id": USER_ID},
+            timeout=180,
+            stream=True,
+        ) as response:
+            if response.status_code >= 400:
+                return None, f"{response.status_code}: {response.text}"
+
+            placeholder = st.empty()
+
+            for raw_line in response.iter_lines():
+                if not raw_line:
+                    continue
+
+                if isinstance(raw_line, bytes):
+                    line = raw_line.decode("utf-8", errors="replace")
+                else:
+                    line = raw_line
+
+                if not line.startswith("data: "):
+                    continue
+
+                event = json.loads(line[6:])
+
+                if event.get("event") == "step":
+                    steps.append(event.get("step", {}))
+
+                elif event.get("event") == "token":
+                    answer_parts.append(event.get("token", ""))
+                    placeholder.markdown("".join(answer_parts) + " ▌")
+
+                elif event.get("event") == "done":
+                    done = event
+
+                elif event.get("event") == "error":
+                    return None, event.get("detail", "Chat service failed.")
+
+            placeholder.empty()
+
+    except (requests.RequestException, json.JSONDecodeError, UnicodeDecodeError) as exc:
+        return None, str(exc)
+    except Exception as exc:
+        return None, f"Unexpected streaming error: {type(exc).__name__}: {exc}"
+
+    answer = "".join(answer_parts).strip()
+
+    if not answer:
+        return None, "The chat service returned an empty answer."
+
+    return {
+        "answer": answer,
+        "citations": done.get("citations", []),
+        "agent_steps": steps,
+        "usage": done.get("usage", {}),
+        "conversation_id": st.session_state.conversation_id,
+    }, None
+
+
+def submit_question(question: str) -> None:
+    question = question.strip()
+
+    if not question or st.session_state.get("busy"):
         return
-    st.session_state.messages.append(
-        {
+
+    st.session_state.messages.append({
+        "role": "user",
+        "content": question,
+    })
+
+    st.session_state.busy = True
+
+    try:
+        result, error = stream_question(question)
+    except Exception as exc:
+        result = None
+        error = f"Unexpected error: {type(exc).__name__}: {exc}"
+    finally:
+        st.session_state.busy = False
+
+    if error:
+        st.session_state.messages.append({
             "role": "assistant",
-            "content": data.get("answer", ""),
-            "citations": data.get("citations", []),
-            "agent_steps": data.get("agent_steps", []),
-            "usage": data.get("usage", {}),
-            "message_id": data.get("message_id"),
-        }
-    )
-    st.session_state.conversation_id = data.get(
-        "conversation_id", st.session_state.conversation_id
-    )
-    st.session_state.conversation_title = question[:52]
+            "content": f"The research service could not complete this request. {error}",
+            "error": True,
+        })
+        return
 
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": result["answer"],
+        "citations": result.get("citations", []),
+        "agent_steps": result.get("agent_steps", []),
+        "usage": result.get("usage", {}),
+    })
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "conversation_id" not in st.session_state:
-    st.session_state.conversation_id = f"conv_{int(time.time())}"
-if "conversation_title" not in st.session_state:
-    st.session_state.conversation_title = "New research thread"
-if "mode" not in st.session_state:
-    st.session_state.mode = "agent"
-if "selected_source" not in st.session_state:
-    st.session_state.selected_source = None
-if "connection_error" not in st.session_state:
-    st.session_state.connection_error = None
+    st.session_state.conversation_title = question
 
+for key, default in {
+    "messages": [], "conversation_id": f"conv_{int(time.time())}", "conversation_title": "New research thread",
+    "mode": "agent", "selected_source": None, "connection_error": None, "busy": False,
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
 
 documents, documents_error = api_json("GET", "/documents", timeout=8)
 documents = documents if isinstance(documents, list) else []
@@ -524,139 +520,93 @@ conversations, conversations_error = get_conversations()
 health, health_error = api_json("GET", "/health", timeout=8)
 health = health if isinstance(health, dict) else {}
 
-
 with st.sidebar:
     st.markdown(
-        '<div class="brand"><div class="brand-mark">◈</div><div>'
-        '<div class="brand-title">Research Desk</div>'
-        '<div class="brand-subtitle">Annual report intelligence</div></div></div>',
+        '<div class="brand"><div class="brand-mark">◈</div><div><div class="brand-name">Research Desk</div>'
+        '<div class="brand-subtitle">Annual-report intelligence workspace</div></div></div>',
         unsafe_allow_html=True,
     )
-    if st.button("＋  New research thread", use_container_width=True):
-        new_conversation()
-        st.rerun()
-    if st.button("Clear active thread", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.selected_source = None
-        st.session_state.conversation_title = "New research thread"
+    if st.button("＋  New conversation", use_container_width=True):
+        reset_thread()
         st.rerun()
 
-    st.markdown('<div class="rail-label">Conversations</div>', unsafe_allow_html=True)
-    if conversations_error:
-        st.markdown(
-            '<div class="conversation-empty">Conversation history is unavailable.</div>',
-            unsafe_allow_html=True,
-        )
-    elif not conversations:
-        st.markdown(
-            '<div class="conversation-empty">No saved threads yet.</div>',
-            unsafe_allow_html=True,
-        )
+    st.markdown('<div class="upload-card"><strong>Build your research library</strong><span>Upload a PDF report to make it searchable with page-level citations.</span></div>', unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("Upload PDF", type=["pdf"], label_visibility="visible", help="Choose one annual report in PDF format.")
+    if uploaded_file:
+        st.caption(f"Selected: {uploaded_file.name} · {uploaded_file.size / 1024 / 1024:.1f} MB")
+    if uploaded_file and st.button("Upload and process PDF", type="primary", use_container_width=True):
+        with st.spinner("Uploading report…"):
+            response = requests.post(
+                f"{API_URL}/documents/upload",
+                files={"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")},
+                timeout=30,
+            )
+        if response.status_code == 200:
+            st.success("Upload accepted. Processing is running in the background.")
+            st.rerun()
+        else:
+            st.error(f"Upload failed ({response.status_code}): {response.text}")
+
+    st.markdown('<div class="section-label">Document library</div>', unsafe_allow_html=True)
+    if documents_error:
+        st.error(f"Document library unavailable: {documents_error}")
     else:
+        render_library(documents)
+
+    st.markdown('<div class="section-label">Conversation history</div>', unsafe_allow_html=True)
+    if conversations_error:
+        st.warning("Conversation history is unavailable.")
+    elif conversations:
         for conversation in conversations[:12]:
             conversation_id = str(conversation.get("id", ""))
             title = str(conversation.get("title") or "Untitled thread")
-            if st.button(
-                title[:38],
-                key=f"conversation-{conversation_id}",
-                use_container_width=True,
-                help=title,
-            ):
+            if st.button(title, key=f"conversation-{conversation_id}", use_container_width=True, help=title):
                 load_conversation(conversation_id, title)
                 st.rerun()
+    else:
+        st.caption("No saved conversations yet.")
 
-    st.markdown('<div class="rail-label">Research mode</div>', unsafe_allow_html=True)
-    selected_mode = st.radio(
-        "Research mode",
+    st.markdown('<div class="section-label">Research mode</div>', unsafe_allow_html=True)
+    st.session_state.mode = st.radio(
+        "Choose how answers are researched",
         ["agent", "pipeline"],
         index=0 if st.session_state.mode == "agent" else 1,
         format_func=lambda value: (
-            "Agent · multi-step" if value == "agent" else "Pipeline · single pass"
+            "Agent · Multi-step — Searches iteratively and gathers evidence before answering."
+            if value == "agent"
+            else "Pipeline · Single pass — Retrieves relevant passages and answers in one pass."
         ),
-        label_visibility="collapsed",
     )
-    st.session_state.mode = selected_mode
 
-    st.markdown('<div class="rail-label">Add to library</div>', unsafe_allow_html=True)
-    uploaded_file = st.file_uploader(
-        "Upload a PDF report",
-        type=["pdf"],
-        label_visibility="collapsed",
-        help="PDFs are accepted immediately and processed in the background.",
-    )
-    if uploaded_file is not None and st.button(
-        "Upload and process", use_container_width=True
-    ):
-        with st.spinner("Uploading report…"):
-            try:
-                response = requests.post(
-                    f"{API_URL}/documents/upload",
-                    files={
-                        "file": (
-                            uploaded_file.name,
-                            uploaded_file.getvalue(),
-                            "application/pdf",
-                        )
-                    },
-                    timeout=30,
-                )
-                if response.status_code == 200:
-                    st.success("Accepted · processing in background")
-                    st.rerun()
+    with st.expander("Maintenance", expanded=False):
+        left, right = st.columns(2)
+        with left:
+            if st.button("Refresh", use_container_width=True):
+                st.rerun()
+        with right:
+            if st.button("Reindex", use_container_width=True):
+                _, error = api_json("POST", "/documents/reindex", timeout=10)
+                if error:
+                    st.error(f"Reindex failed: {error}")
                 else:
-                    st.error(f"Upload failed ({response.status_code}).")
-            except requests.RequestException as exc:
-                st.error(f"Upload could not reach the API: {exc}")
-
-    if documents_error:
-        st.error("Document library unavailable.")
-    else:
-        render_document_library(documents)
-
-    if st.button("Refresh library", use_container_width=True):
-        st.rerun()
-    if st.button("Rebuild vector index", use_container_width=True):
-        data, error = api_json("POST", "/documents/reindex", timeout=10)
-        if error:
-            st.error(f"Re-indexing failed: {error}")
-        else:
-            st.toast(data.get("message", "Re-indexing started."))
-
+                    st.success("Reindex started.")
 
 st.markdown(
-    '<div class="workspace-header"><div><div class="workspace-kicker">Research workspace</div>'
+    f'<div class="workspace-head"><div><div class="eyebrow">Research workspace</div>'
     f'<div class="workspace-title">{html.escape(st.session_state.conversation_title)}</div></div>'
-    + (
-        '<div class="health"><span class="health-dot"></span>Service ready</div>'
-        if not health_error
-        else '<div class="health" style="color:#c84b5f">Service unavailable</div>'
-    )
-    + "</div>",
+    f'<div class="health {"offline" if health_error else ""}">{"● Service unavailable" if health_error else "● Service ready"}</div></div>',
     unsafe_allow_html=True,
 )
 
-main_column, context_column = st.columns([1.62, 0.78], gap="large")
-
-with main_column:
-    mode_label = "Agent mode" if st.session_state.mode == "agent" else "Pipeline mode"
-    st.markdown(
-        f'<span class="mode-chip">{mode_label}</span>'
-        '<div class="thread-intro">Ask about the indexed annual reports. Answers are '
-        "grounded in retrieved PDF passages and retain their page citations.</div>",
-        unsafe_allow_html=True,
-    )
-
+chat_column, trace_column = st.columns([1.62, .78], gap="large")
+with chat_column:
+    mode_label = "Agent · multi-step" if st.session_state.mode == "agent" else "Pipeline · single pass"
+    st.markdown(f'<span class="mode-badge">◈ {mode_label}</span><div class="panel-subtitle" style="margin:.55rem 0 1rem">Ask about indexed reports. Answers retain page-level citations and the research activity panel shows how evidence was gathered.</div>', unsafe_allow_html=True)
     if st.session_state.connection_error:
         st.error(st.session_state.connection_error)
-
     if not st.session_state.messages:
-        st.markdown(
-            '<div class="empty-workspace"><strong>Start a new research thread</strong>'
-            "Ask for a figure, a comparison, or a specific passage. The research context "
-            "panel will collect sources and activity as you work.</div>",
-            unsafe_allow_html=True,
-        )
-        st.markdown('<div class="rail-label">Suggested questions</div>', unsafe_allow_html=True)
+        st.markdown('<div class="empty-state"><strong>Start a grounded research session</strong>Upload a report from the sidebar, then ask a focused question about its financial performance, risks, or operations.</div>', unsafe_allow_html=True)
+        st.caption("Suggested questions")
         suggestions = [
             "What was the total power generation capacity of RWE AG?",
             "Compare operating performance across the annual reports.",
@@ -665,135 +615,40 @@ with main_column:
         suggestion_columns = st.columns(3)
         for index, suggestion in enumerate(suggestions):
             with suggestion_columns[index]:
-                if st.button(
-                    suggestion,
-                    key=f"suggestion-{index}",
-                    use_container_width=True,
-                ):
-                    with st.spinner(f"Researching with {mode_label.lower()}…"):
-                        submit_question(suggestion)
+                if st.button(suggestion, key=f"suggestion-{index}", use_container_width=True):
+                    submit_question(suggestion)
                     st.rerun()
-
     for index, message in enumerate(st.session_state.messages):
         role = message.get("role", "assistant")
         with st.chat_message(role):
             if role == "user":
-                st.markdown(
-                    f'<div class="user-message">{html.escape(str(message.get("content", "")))}</div>',
-                    unsafe_allow_html=True,
-                )
+                st.markdown(message.get("content", ""))
             else:
                 answer = str(message.get("content", ""))
-                refusal = is_refusal(answer)
-                kicker_class = "refusal-kicker" if refusal else ""
-                kicker_text = "No matching evidence" if refusal else "Grounded answer"
-                st.markdown(
-                    f'<div class="answer-kicker {kicker_class}">{kicker_text}</div>',
-                    unsafe_allow_html=True,
-                )
+                refused = is_refusal(answer)
+                st.markdown(f'<div class="answer-label {"refusal" if refused else ""}">{"No matching evidence" if refused else "Grounded answer"}</div>', unsafe_allow_html=True)
                 st.markdown(answer)
                 if message.get("error"):
                     st.warning("This response did not complete successfully.")
-                render_sources(message.get("citations", []), f"message-{index}")
-                render_timeline(message.get("agent_steps", []))
-                render_feedback(message.get("message_id"), f"feedback-{index}")
+                render_citations(message.get("citations", []), f"message-{index}")
 
-if prompt := st.chat_input(
-    "Ask a question about the reports…",
-    disabled=bool(health_error),
-):
-    with st.spinner(f"Researching with {st.session_state.mode} mode…"):
+    prompt = st.chat_input("Ask a question about the reports…", disabled=st.session_state.busy or bool(health_error))
+    if prompt:
         submit_question(prompt)
-    st.rerun()
+        st.rerun()
 
-
-with context_column:
-    st.markdown(
-        '<div class="context-panel"><h3>Research context</h3>'
-        '<div class="context-copy">Sources and activity from the active thread. '
-        "Nothing is invented here—only backend-returned evidence is shown.</div>",
-        unsafe_allow_html=True,
-    )
-    all_citations: List[Dict[str, Any]] = []
+with trace_column:
+    st.markdown('<div class="panel"><div class="panel-title">Agent Activity</div><div class="panel-subtitle">Chronological searches, tool calls, observations, and synthesis from the backend trace.</div></div>', unsafe_allow_html=True)
     all_steps: List[Dict[str, Any]] = []
-    total_usage = {"prompt_tokens": 0, "completion_tokens": 0, "usd": 0.0}
+    all_citations: List[Dict[str, Any]] = []
     for message in st.session_state.messages:
-        if message.get("role") != "assistant":
-            continue
-        all_citations.extend(message.get("citations", []))
-        all_steps.extend(message.get("agent_steps", []))
-        usage = message.get("usage", {})
-        total_usage["prompt_tokens"] += usage.get("prompt_tokens", 0)
-        total_usage["completion_tokens"] += usage.get("completion_tokens", 0)
-        total_usage["usd"] += usage.get("usd", 0.0)
-
-    selected_source = st.session_state.selected_source
-    if selected_source:
-        raw_document = str(selected_source.get("document", "Unknown document"))
-        raw_page = selected_source.get("page", "?")
-        document = html.escape(raw_document)
-        page = html.escape(str(raw_page))
-        st.markdown(
-            f'<div class="context-label">Selected source</div><div class="source-card '
-            f'source-selected"><div class="source-name">◈ {document}</div>'
-            f'<div class="source-page">Page {page} · Citation detail</div></div>',
-            unsafe_allow_html=True,
-        )
-        if isinstance(raw_page, int):
-            st.link_button(
-                "Open original PDF at this page",
-                f"{API_URL}/documents/{quote(raw_document, safe='')}/file#page={raw_page}",
-                use_container_width=True,
-            )
-        if isinstance(raw_page, int):
-            passage, passage_error = api_json(
-                "GET",
-                f"/documents/{quote(raw_document, safe='')}/pages/{raw_page}",
-                timeout=10,
-            )
-            if passage_error:
-                st.error(f"Could not load the cited passage: {passage_error}")
-            else:
-                st.markdown("**Extracted passage**")
-                for text in passage.get("passages", []):
-                    st.code(text, language="text")
-
-    st.markdown('<div class="context-label">Sources in thread</div>', unsafe_allow_html=True)
-    unique_sources = []
-    seen_sources = set()
-    for citation in all_citations:
-        key = (
-            citation.get("document") or citation.get("doc"),
-            citation.get("page"),
-        )
-        if key not in seen_sources:
-            seen_sources.add(key)
-            unique_sources.append(citation)
-    if unique_sources:
-        for citation in unique_sources[:10]:
-            document = html.escape(
-                str(citation.get("document") or citation.get("doc") or "Unknown document")
-            )
-            page = citation.get("page", "?")
-            st.markdown(
-                f'<div class="source-card"><div class="source-name">◈ {document}</div>'
-                f'<div class="source-page">Page {page}</div></div>',
-                unsafe_allow_html=True,
-            )
-    else:
-        st.markdown(
-            '<div class="context-copy">Citations will appear after the first answer.</div>',
-            unsafe_allow_html=True,
-        )
-
-    if all_steps:
-        st.markdown('<div class="context-label">Activity summary</div>', unsafe_allow_html=True)
-        st.markdown(
-            f'<div class="metric"><span class="metric-label">Research steps</span>'
-            f'<span class="metric-value">{len(all_steps)}</span></div>',
-            unsafe_allow_html=True,
-        )
-    if any(total_usage.values()):
-        st.markdown('<div class="context-label">Thread usage</div>', unsafe_allow_html=True)
-        render_usage(total_usage)
-    st.markdown("</div>", unsafe_allow_html=True)
+        if message.get("role") == "assistant":
+            all_steps.extend(message.get("agent_steps", []))
+            all_citations.extend(message.get("citations", []))
+    render_trace(all_steps[-24:])
+    st.markdown('<div class="section-label">Sources and selected passage</div>', unsafe_allow_html=True)
+    render_selected_source()
+    st.markdown('<div class="section-label">Returned usage</div>', unsafe_allow_html=True)
+    render_usage(st.session_state.messages)
+    if all_citations:
+        st.caption(f"{len({citation_key(c) for c in all_citations})} unique cited source(s) in this thread")
