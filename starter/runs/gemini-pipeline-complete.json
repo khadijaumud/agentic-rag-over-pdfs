@@ -1,0 +1,454 @@
+{
+  "label": "gemini-pipeline-complete",
+  "scorecard": {
+    "answer accuracy": 0.538,
+    "correct refusals on unanswerable": 0.667,
+    "evidence cited": 0.667,
+    "seconds per question": 14.934,
+    "usd for the whole set": 0.0054
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "kind": "number",
+      "answerable": true,
+      "expected": "294000",
+      "answer": "Data not available or not mentioned in the report. [HCA Healthcare, Inc..pdf, p.4], [HCA Healthcare, Inc..pdf, p.72]",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 4
+        },
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 72
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 1.47,
+      "usd": 0.000583,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 7624,
+      "completion_tokens": 37,
+      "error": null
+    },
+    {
+      "id": "q02",
+      "kind": "number",
+      "answerable": true,
+      "expected": "406100000",
+      "answer": "According to the Consolidated Statements of Cash Flows, the net cash provided by operating activities for Sonic Automotive, Inc. for the year ended December 31, 2022, was $406.1 million [Sonic Automotive, Inc..pdf, p.92].",
+      "citations": [
+        {
+          "document": "Sonic Automotive, Inc..pdf",
+          "page": 92
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 1.7,
+      "usd": 0.000573,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 7406,
+      "completion_tokens": 58,
+      "error": null
+    },
+    {
+      "id": "q03",
+      "kind": "number",
+      "answerable": true,
+      "expected": "31400000",
+      "answer": "Data not available or not mentioned in the report.",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 35
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 75
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 58
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 3.86,
+      "usd": 0.000539,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 7141,
+      "completion_tokens": 10,
+      "error": null
+    },
+    {
+      "id": "q04",
+      "kind": "number",
+      "answerable": true,
+      "expected": "2300",
+      "answer": "Data not available or not mentioned in the report. [Albany International Corp..pdf, p.16]",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 16
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 4.87,
+      "usd": 0.000483,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 6346,
+      "completion_tokens": 23,
+      "error": null
+    },
+    {
+      "id": "q05",
+      "kind": "number",
+      "answerable": true,
+      "expected": "9686067000",
+      "answer": "The total assets for Origin Bancorp, Inc. at year-end were $9,686,067,000 for 2022 and $7,861,285,000 for 2021 [Origin Bancorp, Inc..pdf, p.6].",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 6
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 4.77,
+      "usd": 0.000575,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 7396,
+      "completion_tokens": 69,
+      "error": null
+    },
+    {
+      "id": "q06",
+      "kind": "number",
+      "answerable": true,
+      "expected": "39.3",
+      "answer": "The total power generation capacity of RWE AG was 39.3 GW at year end [RWE AG.pdf, p.47].",
+      "citations": [
+        {
+          "document": "RWE AG.pdf",
+          "page": 47
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 4.9,
+      "usd": 4.4e-05,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 464,
+      "completion_tokens": 31,
+      "error": null
+    },
+    {
+      "id": "q07",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Director"
+      ],
+      "answer": "Data not available or not mentioned in the report. [Datalogic.pdf, p.82]",
+      "citations": [
+        {
+          "document": "Datalogic.pdf",
+          "page": 82
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 1.59,
+      "usd": 9.4e-05,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 1166,
+      "completion_tokens": 22,
+      "error": null
+    },
+    {
+      "id": "q08",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Chief Legal Counsel",
+        "Chief Financial Officer"
+      ],
+      "answer": "Data not available or not mentioned in the report.",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 5
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 1.49,
+      "usd": 5.1e-05,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 635,
+      "completion_tokens": 10,
+      "error": null
+    },
+    {
+      "id": "q09",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "President and Chief Executive Officer"
+      ],
+      "answer": "Based on the provided report, the following leadership position changes occurred:\n\n*   **Chief Financial Officer and Vice President of Finance:** Jeffrey L. Vigil retired, and Steven M. Cates was elected to this position effective August 26, 2022 [Westwater Resources, Inc..pdf, p. 16, 17].\n*   **General Counsel and Corporate Secretary:** John W. Lawrence was elected to these positions on February 26, 2022 (having previously served in a contractual capacity) [Westwater Resources, Inc..pdf, p. 17].\n\nAdditionally, the report notes the following changes that occurred on January 16, 2023 (subsequent to the 2022 reporting period):\n*   **President and Chief Executive Officer:** Frank Bakker was appointed [Westwater Resources, Inc..pdf, p. 16].\n*   **Senior Vice President of Finance and Chief Financial Officer:** Steven M. Cates was promoted to this title [Westwater Resources, Inc..pdf, p. 17].\n*   **Chief Administrative Officer:** John W. Lawrence was promoted to this title [Westwater Resources, Inc..pdf, p. 17].",
+      "citations": [
+        {
+          "document": "Westwater Resources, Inc..pdf",
+          "page": 16
+        },
+        {
+          "document": "Westwater Resources, Inc..pdf",
+          "page": 17
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 6.94,
+      "usd": 0.000421,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 4565,
+      "completion_tokens": 262,
+      "error": null
+    },
+    {
+      "id": "q10",
+      "kind": "name",
+      "answerable": true,
+      "expected": "Datalogic",
+      "answer": "Data not available. The report does not contain information to answer this question.",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 0.44,
+      "usd": 0.0,
+      "provider": null,
+      "model": null,
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "error": null
+    },
+    {
+      "id": "q11",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "False. The provided report does not mention any changes to the company's dividend policy [HCA Healthcare, Inc..pdf, p.1-80].",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 1
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 7.47,
+      "usd": 0.0002,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 2534,
+      "completion_tokens": 33,
+      "error": null
+    },
+    {
+      "id": "q12",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "True",
+      "answer": "Yes, Brave Bison Group plc mentioned mergers and acquisitions in the annual report:\n\n*   **Best Response Media Limited:** On 28 April 2022, the Group acquired the entire issued share capital of Best Response Media Limited [Brave Bison Group plc.pdf, p.61].\n*   **Greenlight:** The report references the payment of deferred consideration in respect of the Greenlight acquisition made in 2021 [Brave Bison Group plc.pdf, p.7] and notes the investment in Greenlight in the 2021 financial statements [Brave Bison Group plc.pdf, p.65].\n*   **Social Chain Limited:** On 3 February 2023, the Group announced the purchase of 100% of the issued share capital of Social Chain Limited [Brave Bison Group plc.pdf, p.61].",
+      "citations": [
+        {
+          "document": "Brave Bison Group plc.pdf",
+          "page": 61
+        },
+        {
+          "document": "Brave Bison Group plc.pdf",
+          "page": 7
+        },
+        {
+          "document": "Brave Bison Group plc.pdf",
+          "page": 65
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 1.92,
+      "usd": 0.000562,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 6746,
+      "completion_tokens": 186,
+      "error": null
+    },
+    {
+      "id": "q13",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "The report does not mention any changes to the dividend policy; it describes the existing policy, which includes a consolidated dividend payout ratio in the range of 40% as a medium-term target and the intention to pay cash dividends twice a year [Seiko Epson Corporation.pdf, p.67].",
+      "citations": [
+        {
+          "document": "Seiko Epson Corporation.pdf",
+          "page": 67
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 58.12,
+      "usd": 0.000266,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 3305,
+      "completion_tokens": 62,
+      "error": null
+    },
+    {
+      "id": "q14",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "N/A [Armadale Capital Plc.pdf, p.9, 22]",
+      "citations": [
+        {
+          "document": "Armadale Capital Plc.pdf",
+          "page": 9
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 36.0,
+      "usd": 0.00033,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 4321,
+      "completion_tokens": 19,
+      "error": null
+    },
+    {
+      "id": "q15",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "N/A",
+      "citations": [
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 30
+        },
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 95
+        },
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 63
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 30.69,
+      "usd": 0.000384,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 5110,
+      "completion_tokens": 3,
+      "error": null
+    },
+    {
+      "id": "q16",
+      "kind": "names",
+      "answerable": false,
+      "expected": null,
+      "answer": "The provided report does not list specific names of new products launched by Albany International Corp. [Albany International Corp..pdf, pp. 1-128].",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 1
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 16
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 7
+        }
+      ],
+      "correct": false,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 72.71,
+      "usd": 0.000298,
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 3840,
+      "completion_tokens": 34,
+      "error": null
+    }
+  ]
+}

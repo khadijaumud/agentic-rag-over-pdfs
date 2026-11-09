@@ -18,15 +18,16 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 from pydantic import BaseModel
 
-from src.config import PDF_DIR, DATA_DIR, MAX_USER_BUDGET_USD
+from src.config import PDF_DIR, DATA_DIR, MAX_USER_BUDGET_USD, MAX_HISTORY_TOKENS
 from src.db import (
     init_db,
     list_documents as db_list_docs,
     delete_document as db_delete_doc,
     get_document,
+    get_page_chunks,
     save_conversation,
     save_message,
     get_conversation_history,
@@ -37,6 +38,7 @@ from src.db import (
 from src.ingestion import ingest_pdf_file, rebuild_vector_index_from_db
 from src.agent import run_agent
 from src.pipeline import run_single_pass_pipeline
+from src import vector_store
 
 app = FastAPI(
     title="Agentic RAG over Annual Reports",
@@ -74,7 +76,8 @@ async def health():
     return {
         "status": "ok",
         "total_documents": len(docs),
-        "ready_documents": ready_count
+        "ready_documents": ready_count,
+        "vector_indexed_chunks": vector_store.count() if vector_store.is_available() else None,
     }
 
 @app.post("/chat")
@@ -88,7 +91,7 @@ async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="defa
     if spent >= MAX_USER_BUDGET_USD:
         raise HTTPException(status_code=429, detail=f"User budget limit reached (${spent:.2f} spent).")
         
-    history = get_conversation_history(conv_id, limit=6)
+    history = get_conversation_history(conv_id, limit=6, max_tokens=MAX_HISTORY_TOKENS)
     
     # Infer mode: explicit mode in request body, or header/user-id indicating pipeline
     mode = req.mode or "agent"
@@ -96,10 +99,13 @@ async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="defa
         mode = "pipeline"
         
     # Dispatch between multi-step agent and single-pass baseline
-    if mode == "pipeline":
-        result = run_single_pass_pipeline(req.question, document_filter=req.document_filter)
-    else:
-        result = run_agent(req.question, conversation_history=history)
+    try:
+        if mode == "pipeline":
+            result = run_single_pass_pipeline(req.question, document_filter=req.document_filter)
+        else:
+            result = run_agent(req.question, conversation_history=history)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
         
     usage = result.get("usage", {})
     cost = usage.get("usd", 0.0)
@@ -124,7 +130,9 @@ async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="defa
     )
     
     # Record usage
-    record_usage(x_user_id, conv_id, p_tokens, c_tokens, cost, model=req.mode or "agent")
+    models = usage.get("models", [])
+    model = usage.get("model") or (models[0] if models else req.mode or "agent")
+    record_usage(x_user_id, conv_id, p_tokens, c_tokens, cost, model=model)
     
     return {
         "conversation_id": conv_id,
@@ -135,7 +143,11 @@ async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="defa
         "usage": {
             "usd": cost,
             "prompt_tokens": p_tokens,
-            "completion_tokens": c_tokens
+            "completion_tokens": c_tokens,
+            "provider": usage.get("provider"),
+            "model": usage.get("model"),
+            "providers": usage.get("providers", []),
+            "models": usage.get("models", []),
         }
     }
 
@@ -186,6 +198,33 @@ async def list_documents():
     """List all indexed documents with page counts and status."""
     return db_list_docs()
 
+@app.get("/documents/{doc_id}/pages/{page_number}")
+async def document_page(doc_id: str, page_number: int):
+    """Return the extracted passage behind a citation."""
+    if page_number < 1:
+        raise HTTPException(status_code=400, detail="page_number must be 1 or greater.")
+    if not get_document(doc_id):
+        raise HTTPException(status_code=404, detail="Document not found.")
+    chunks = get_page_chunks(doc_id, page_number)
+    if not chunks:
+        raise HTTPException(status_code=404, detail="Page content not found.")
+    return {
+        "document": doc_id,
+        "page": page_number,
+        "passages": [chunk["content"] for chunk in chunks],
+    }
+
+@app.get("/documents/{doc_id}/file")
+async def document_file(doc_id: str):
+    """Serve the original PDF so a citation can open the real report page."""
+    document = get_document(doc_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found.")
+    path = PDF_DIR / document["filename"]
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="PDF file is not available.")
+    return FileResponse(path, media_type="application/pdf", filename=document["filename"])
+
 @app.post("/documents/upload")
 async def upload_document(
     background_tasks: BackgroundTasks,
@@ -220,6 +259,11 @@ async def delete_document(doc_id: str):
     doc = get_document(doc_id)
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found.")
+    if vector_store.is_available():
+        try:
+            vector_store.delete_document(doc_id)
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail="Vector index deletion failed.") from exc
     db_delete_doc(doc_id)
     return {"status": "deleted", "document": doc_id}
 

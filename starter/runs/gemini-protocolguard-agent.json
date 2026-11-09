@@ -1,0 +1,467 @@
+{
+  "label": "gemini-protocolguard-agent",
+  "scorecard": {
+    "answer accuracy": 0.154,
+    "correct refusals on unanswerable": 0.333,
+    "evidence cited": 0.417,
+    "seconds per question": 22.154,
+    "usd for the whole set": 0.0119
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "kind": "number",
+      "answerable": true,
+      "expected": "294000",
+      "answer": "The HCA Healthcare, Inc. annual report does not provide the specific value for the total number of healthcare professionals on staff at the end of the period [HCA Healthcare, Inc..pdf, p. 37].",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 37
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 14.77,
+      "usd": 0.000715,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 8534,
+      "completion_tokens": 248,
+      "error": null
+    },
+    {
+      "id": "q02",
+      "kind": "number",
+      "answerable": true,
+      "expected": "406100000",
+      "answer": "According to the Consolidated Statements of Cash Flows in the annual report for Sonic Automotive, Inc., the net cash provided by operating activities (cash flow from operations) for the latest period ended December 31, 2022, was **$406.1 million** (or $406,100,000) [Sonic Automotive, Inc..pdf, p. 92]. (For prior periods: $306.3 million in 2021 and $281.1 million in 2020 [Sonic Automotive, Inc..pdf, p. 92].)",
+      "citations": [
+        {
+          "document": "Sonic Automotive, Inc..pdf",
+          "page": 92
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 13.76,
+      "usd": 0.001426,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 16657,
+      "completion_tokens": 587,
+      "error": null
+    },
+    {
+      "id": "q03",
+      "kind": "number",
+      "answerable": true,
+      "expected": "31400000",
+      "answer": "Data not available [Albany International Corp.pdf, p.16]",
+      "citations": [
+        {
+          "document": "Albany International Corp.pdf",
+          "page": 16
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 18.3,
+      "usd": 0.001577,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 19573,
+      "completion_tokens": 363,
+      "error": null
+    },
+    {
+      "id": "q04",
+      "kind": "number",
+      "answerable": true,
+      "expected": "2300",
+      "answer": "N/A",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 15.41,
+      "usd": 0.00045,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5406,
+      "completion_tokens": 155,
+      "error": null
+    },
+    {
+      "id": "q05",
+      "kind": "number",
+      "answerable": true,
+      "expected": "9686067000",
+      "answer": "For Origin Bancorp, Inc., the value of Total assets on the consolidated balance sheets at year-end was $9,686,067 thousand (or $9,686,067,000) at December 31, 2022, and $7,861,285 thousand (or $7,861,285,000) at December 31, 2021 [Origin Bancorp, Inc..pdf, p. 191].",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 191
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 45.05,
+      "usd": 0.001637,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 20244,
+      "completion_tokens": 396,
+      "error": null
+    },
+    {
+      "id": "q06",
+      "kind": "number",
+      "answerable": true,
+      "expected": "39.3",
+      "answer": "Thought: I have enough evidence from the search observation on page 47 of RWE AG.pdf. Let me read the exact page to be fully certain, or I can use the snippet provided. Wait, the prompt says \"If search returns a promising passage, read its exact page before answering.\" Let me read page 47.\nAction: read_page\nAction Input: {\"document\": \"RWE AG.pdf\", \"page_number\": 47}",
+      "citations": [
+        {
+          "document": "RWE AG.pdf",
+          "page": 47
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 59.62,
+      "usd": 0.000472,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5426,
+      "completion_tokens": 215,
+      "error": null
+    },
+    {
+      "id": "q07",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Director"
+      ],
+      "answer": "Data not available [Datalogic.pdf, p. 38, 226-227].",
+      "citations": [
+        {
+          "document": "Datalogic.pdf",
+          "page": 38
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 47.58,
+      "usd": 0.001101,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 13244,
+      "completion_tokens": 358,
+      "error": null
+    },
+    {
+      "id": "q08",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Chief Legal Counsel",
+        "Chief Financial Officer"
+      ],
+      "answer": "Data not available [Origin Bancorp, Inc..pdf, p.111, 264].",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 111
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 23.76,
+      "usd": 0.000569,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 6268,
+      "completion_tokens": 330,
+      "error": null
+    },
+    {
+      "id": "q09",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "President and Chief Executive Officer"
+      ],
+      "answer": "N/A",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 15.36,
+      "usd": 0.000421,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5311,
+      "completion_tokens": 75,
+      "error": null
+    },
+    {
+      "id": "q10",
+      "kind": "name",
+      "answerable": true,
+      "expected": "Datalogic",
+      "answer": "Data not available (Atreca, Inc. reports in USD, and other companies' reporting currencies vary; complete conversion to EUR for all listed companies is not provided or feasible with the available report data).",
+      "citations": [
+        {
+          "document": "Atreca, Inc..pdf",
+          "page": 83
+        },
+        {
+          "document": "Atreca, Inc..pdf",
+          "page": 84
+        },
+        {
+          "document": "Atreca, Inc..pdf",
+          "page": 86
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 16.91,
+      "usd": 0.000703,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 7983,
+      "completion_tokens": 345,
+      "error": null
+    },
+    {
+      "id": "q11",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "In its annual report, HCA Healthcare, Inc. did not announce a formal change to its dividend policy, though it disclosed ongoing quarterly cash dividend declarations and noted that its Board of Directors increased the quarterly dividend from $0.56 per share (declared during 2022) to $0.60 per share (declared on January 26, 2023) [HCA Healthcare, Inc..pdf, p. 59].",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 59
+        }
+      ],
+      "correct": false,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 15.42,
+      "usd": 0.000688,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 7171,
+      "completion_tokens": 504,
+      "error": null
+    },
+    {
+      "id": "q12",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "True",
+      "answer": "Thought: I will search for mentions of mergers or acquisitions in the Brave Bison Group plc annual report.\nAction: search_documents\nAction Input: {\"query\": \"acquisition merger\", \"document_filter\": \"Brave Bison Group plc.pdf\"}",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 15.88,
+      "usd": 0.000405,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5191,
+      "completion_tokens": 51,
+      "error": null
+    },
+    {
+      "id": "q13",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "Thought: I have enough evidence from page 67 of Seiko Epson Corporation.pdf about the dividend policy. Let me read the exact page to make sure I have all the context on whether changes were announced.\nAction: read_page\nActionInput: {\"document\": \"Seiko Epson Corporation.pdf\", \"page_number\": 67}",
+      "citations": [
+        {
+          "document": "Seiko Epson Corporation.pdf",
+          "page": 67
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 15.31,
+      "usd": 0.000466,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5702,
+      "completion_tokens": 128,
+      "error": null
+    },
+    {
+      "id": "q14",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "According to the annual report of Armadale Capital Plc for the year ended 31 December 2022, the company reports no revenue from operations (only administrative expenses, change in fair value of investments, and operating loss) [Armadale Capital Plc.pdf, p. 22]. Therefore, the gross margin (%) is not applicable or not available (N/A) [Armadale Capital Plc.pdf, p. 22].",
+      "citations": [
+        {
+          "document": "Armadale Capital Plc.pdf",
+          "page": 22
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 13.12,
+      "usd": 0.000633,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 7156,
+      "completion_tokens": 318,
+      "error": null
+    },
+    {
+      "id": "q15",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "ERROR: RuntimeError: HTTP 503: {\"detail\":\"All LLM providers failed: Gemini error: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}\"}",
+      "citations": [],
+      "correct": false,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 8.4,
+      "usd": 0.0,
+      "provider": null,
+      "model": null,
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "error": "RuntimeError: HTTP 503: {\"detail\":\"All LLM providers failed: Gemini error: 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}\"}"
+    },
+    {
+      "id": "q16",
+      "kind": "names",
+      "answerable": false,
+      "expected": null,
+      "answer": "The annual report for Albany International Corp. discusses research and development, new technology platforms, and new product enhancements across its product lines [Albany International Corp..pdf, p. 16], but it does not list or name specific newly launched products.",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 16
+        }
+      ],
+      "correct": false,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 15.81,
+      "usd": 0.000596,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 6580,
+      "completion_tokens": 342,
+      "error": null
+    }
+  ]
+}

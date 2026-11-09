@@ -19,8 +19,23 @@ from src.config import (
     DEFAULT_RERANK_TOP_N,
     DEFAULT_RELEVANCE_THRESHOLD
 )
+from src import vector_store
 
 _RANKER = None
+
+_LEXICAL_SYNONYMS = {
+    "staff": ("employees", "personnel", "workforce", "people"),
+    "employees": ("staff", "personnel", "workforce", "people"),
+    "professionals": ("employees", "personnel", "workforce", "people"),
+    "leadership": ("directors", "officers", "management", "executives"),
+    "positions": ("roles", "offices", "appointments"),
+    "changed": ("appointed", "resigned", "retired", "elected"),
+    "launched": ("introduced", "developed", "products", "enhancements"),
+    "products": ("product", "platforms", "enhancements"),
+    "acquisitions": ("acquisition", "acquired", "merger", "mergers"),
+    "mergers": ("merger", "acquisition", "acquired"),
+    "operations": ("operating",),
+}
 
 def get_reranker():
     """Lazy load FlashRank Ranker."""
@@ -40,8 +55,11 @@ def sanitize_fts5_query(query: str) -> str:
     tokens = re.findall(r"[A-Za-z0-9_]+", query)
     if not tokens:
         return '""'
+    expanded = list(tokens)
+    for token in tokens:
+        expanded.extend(_LEXICAL_SYNONYMS.get(token.lower(), ()))
     # Use OR or AND for tokens, quoting each token safely
-    return " OR ".join(f'"{t}"' for t in tokens)
+    return " OR ".join(f'"{t}"' for t in dict.fromkeys(expanded))
 
 def lexical_search(
     query: str,
@@ -99,6 +117,11 @@ def dense_search(
 ) -> List[Dict[str, Any]]:
     """Dense vector search using normalized cosine similarity."""
     query_emb = embed_query(query)
+    if vector_store.is_available():
+        try:
+            return vector_store.search(query_emb, top_k, document_filter)
+        except Exception as exc:
+            print(f"[Vector DB Warning] Qdrant search failed; using SQLite embeddings: {exc}")
     
     conn = get_connection()
     cur = conn.cursor()

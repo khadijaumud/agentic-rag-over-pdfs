@@ -1,0 +1,413 @@
+{
+  "label": "gemini-latest-agent",
+  "scorecard": {
+    "answer accuracy": 0.077,
+    "correct refusals on unanswerable": 0.0,
+    "evidence cited": 0.0,
+    "seconds per question": 4.696,
+    "usd for the whole set": 0.0024
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "kind": "number",
+      "answerable": true,
+      "expected": "294000",
+      "answer": "As of December 31, 2022, HCA Healthcare, Inc. had a workforce of approximately 294,000 employees, which included approximately 87,000 part-time and PRN employees [HCA Healthcare, Inc..pdf, p. 35]. The report does not provide a specific breakdown or separate count specifically labeled as \"Number of healthcare professionals on staff\" beyond this total employee count and the mention of licensed physicians and nurses.",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 35
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 9.37,
+      "usd": 0.000652,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 7402,
+      "completion_tokens": 325,
+      "error": null
+    },
+    {
+      "id": "q02",
+      "kind": "number",
+      "answerable": true,
+      "expected": "406100000",
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 4.02,
+      "usd": 0.000102,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1174,
+      "completion_tokens": 47,
+      "error": null
+    },
+    {
+      "id": "q03",
+      "kind": "number",
+      "answerable": true,
+      "expected": "31400000",
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 5.27,
+      "usd": 9.4e-05,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 996,
+      "completion_tokens": 65,
+      "error": null
+    },
+    {
+      "id": "q04",
+      "kind": "number",
+      "answerable": true,
+      "expected": "2300",
+      "answer": "Thought: I need to find the value of the Year-end patent portfolio (aerospace tech) for Albany International Corp. from their annual report. Let's first list the available documents to get the correct document name.\nAction: <list_documents>\nAction Input: {}",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 3.03,
+      "usd": 5.1e-05,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 452,
+      "completion_tokens": 58,
+      "error": null
+    },
+    {
+      "id": "q05",
+      "kind": "number",
+      "answerable": true,
+      "expected": "9686067000",
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 4.08,
+      "usd": 0.000105,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1173,
+      "completion_tokens": 56,
+      "error": null
+    },
+    {
+      "id": "q06",
+      "kind": "number",
+      "answerable": true,
+      "expected": "39.3",
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 3.93,
+      "usd": 0.000105,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1165,
+      "completion_tokens": 58,
+      "error": null
+    },
+    {
+      "id": "q07",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Director"
+      ],
+      "answer": "Thought: I need to find information about leadership or management position changes at Datalogic in the reporting period. First, I'll list the available documents to get the correct document name for Datalogic.\nAction: `list_documents`\nAction Input: `{}`",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 2.02,
+      "usd": 5e-05,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 442,
+      "completion_tokens": 56,
+      "error": null
+    },
+    {
+      "id": "q08",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Chief Legal Counsel",
+        "Chief Financial Officer"
+      ],
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 3.96,
+      "usd": 0.000107,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1168,
+      "completion_tokens": 67,
+      "error": null
+    },
+    {
+      "id": "q09",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "President and Chief Executive Officer"
+      ],
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 4.38,
+      "usd": 8.6e-05,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1153,
+      "completion_tokens": 0,
+      "error": null
+    },
+    {
+      "id": "q10",
+      "kind": "name",
+      "answerable": true,
+      "expected": "Datalogic",
+      "answer": "Abort: Too many steps.",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 4.88,
+      "usd": 9.7e-05,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1257,
+      "completion_tokens": 6,
+      "error": null
+    },
+    {
+      "id": "q11",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 4.54,
+      "usd": 8.6e-05,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1142,
+      "completion_tokens": 0,
+      "error": null
+    },
+    {
+      "id": "q12",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "True",
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 3.88,
+      "usd": 0.0001,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1129,
+      "completion_tokens": 52,
+      "error": null
+    },
+    {
+      "id": "q13",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 4.57,
+      "usd": 0.0001,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1130,
+      "completion_tokens": 51,
+      "error": null
+    },
+    {
+      "id": "q14",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "",
+      "citations": [],
+      "correct": false,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 4.11,
+      "usd": 0.000102,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1164,
+      "completion_tokens": 51,
+      "error": null
+    },
+    {
+      "id": "q15",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "",
+      "citations": [
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 31
+        }
+      ],
+      "correct": false,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 10.9,
+      "usd": 0.000492,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5423,
+      "completion_tokens": 284,
+      "error": null
+    },
+    {
+      "id": "q16",
+      "kind": "names",
+      "answerable": false,
+      "expected": null,
+      "answer": "Thought: I need to find the names of new products launched by Albany International Corp. from their annual report. Let's first list the documents to get the exact file name.\nAction: `list_documents`\nAction Input: `{}`",
+      "citations": [],
+      "correct": false,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 2.2,
+      "usd": 4.7e-05,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 429,
+      "completion_tokens": 50,
+      "error": null
+    }
+  ]
+}

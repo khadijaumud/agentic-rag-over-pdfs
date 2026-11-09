@@ -12,11 +12,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application files
+# Keep seed data outside the runtime volume so a fresh named volume can be
+# initialized without losing the starter corpus.
+COPY data/rag_database.db /opt/seed/rag_database.db
+COPY starter/data/pdfs /opt/seed/pdfs
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Copy application files. Secrets are excluded by .dockerignore.
 COPY . .
 
 # Expose FastAPI and Streamlit ports
 EXPOSE 8000 8501
 
 # Entrypoint script starts both backend and frontend
-CMD ["sh", "-c", "python -m uvicorn src.app:app --host 0.0.0.0 --port 8000 & exec streamlit run src/ui.py --server.port 8501 --server.address 0.0.0.0"]
+ENTRYPOINT ["docker-entrypoint.sh"]

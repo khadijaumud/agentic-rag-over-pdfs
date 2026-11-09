@@ -9,6 +9,7 @@ Features:
 
 import json
 import re
+import time
 from typing import Dict, Any, List, Optional, Tuple
 
 from src.config import MAX_AGENT_ITERATIONS, PER_TURN_BUDGET_USD
@@ -16,6 +17,12 @@ from src.retrieval import hybrid_search
 from src.db import list_documents as db_list_docs, get_page_chunks
 from src.llm import call_llm_with_fallback
 from src.pipeline import extract_citations_from_text
+
+REFUSAL_TERMS = re.compile(
+    r"\b(?:n/?a|not available|not mentioned|not disclosed|cannot find|"
+    r"does not contain|no information)\b",
+    re.IGNORECASE,
+)
 
 # Tool definitions
 def tool_list_documents() -> str:
@@ -26,17 +33,36 @@ def tool_list_documents() -> str:
     res = [f"- {d['filename']} ({d['page_count']} pages)" for d in docs]
     return "Available annual reports:\n" + "\n".join(res)
 
+def _search_documents(query: str, document_filter: Optional[str] = None) -> List[Dict[str, Any]]:
+    # The agent needs a slightly wider shortlist than the one-pass baseline so
+    # it can discover a page that uses different report terminology.
+    return hybrid_search(query, document_filter=document_filter, top_k=12)
+
+def _format_search_results(results: List[Dict[str, Any]], query: str) -> str:
+    if not results:
+        return f"No relevant passages found for query '{query}'. Try different search terms or check document name."
+    output = []
+    seen_pages = set()
+    result_number = 0
+    for result in results:
+        page_key = (result["document_id"], result["page_number"])
+        if page_key in seen_pages:
+            continue
+        seen_pages.add(page_key)
+        result_number += 1
+        content = result["content"]
+        if len(content) > 2400:
+            content = content[:2200] + "\n[passage truncated]"
+        output.append(
+            f"[{result_number}] Source: [{result['document_id']}, p.{result['page_number']}]\n{content}"
+        )
+    return "\n\n".join(output)
+
 def tool_search_documents(query: str, document_filter: Optional[str] = None) -> str:
     """Search documents using hybrid search."""
     try:
-        results = hybrid_search(query, document_filter=document_filter, top_k=5)
-        if not results:
-            return f"No relevant passages found for query '{query}'. Try different search terms or check document name."
-        
-        output = []
-        for idx, r in enumerate(results, 1):
-            output.append(f"[{idx}] Source: [{r['document_id']}, p.{r['page_number']}]\n{r['content']}")
-        return "\n\n".join(output)
+        results = _search_documents(query, document_filter=document_filter)
+        return _format_search_results(results, query)
     except Exception as e:
         return f"[Tool Error in search_documents] {str(e)}. Try a simpler search query."
 
@@ -80,6 +106,10 @@ You have access to the following tools:
 3. `read_page(document, page_number)`: Reads full text of a specific page (1-based).
 4. `calculate(expression)`: Computes math expressions.
 
+For a comparison across named companies, search each named document separately
+with `document_filter` before answering. A corpus-wide search can omit some
+companies because results are ranked globally.
+
 RESPONSE FORMAT PROTOCOL:
 At each turn, you must think and either call a tool OR provide your final answer using this EXACT format:
 
@@ -94,9 +124,41 @@ Final Answer: <your cited answer or refusal>
 
 GROUNDING AND REFUSAL RULES:
 - Every claim must cite the exact source: [Document.pdf, p.X].
+- Cite the page that contains the claim, not merely a page returned by search.
+- If search returns a promising passage, read its exact page before answering.
+- For comparisons, collect and cite evidence for every document needed.
+- Do not refuse when the tool observations contain the requested fact.
 - If the report does not state the requested data, your Final Answer MUST explicitly say so (e.g. "Data not available", "The report does not mention...", "N/A").
 - Do NOT guess. Always search first.
 """
+
+FINAL_SYNTHESIS_SYSTEM_PROMPT = """You are the final answer writer for a document-grounded research assistant.
+Use only the evidence already present in the conversation.
+Return only the answer text. Do not write Thought, Action, Action Input, or call a tool.
+Every factual claim must cite the exact source as [Document.pdf, p.X].
+If the evidence does not contain the requested fact, explicitly say that the information
+is not available or not mentioned. Do not guess or add unsupported facts.
+"""
+
+def _contains_tool_protocol(text: str) -> bool:
+    return bool(re.search(r"(?im)^\s*Action(?: Input)?:", text))
+
+def _llm_trace(llm_resp: Dict[str, Any]) -> Dict[str, Any]:
+    """Expose the measured usage for one provider call in the persisted trace."""
+    return {
+        "provider": llm_resp.get("provider"),
+        "model": llm_resp.get("model"),
+        "prompt_tokens": llm_resp.get("prompt_tokens", 0),
+        "completion_tokens": llm_resp.get("completion_tokens", 0),
+        "cost_usd": llm_resp.get("cost_usd", 0.0),
+    }
+
+
+def _timed_llm_call(messages: List[Dict[str, Any]], **kwargs: Any) -> Tuple[Dict[str, Any], float]:
+    started = time.perf_counter()
+    response = call_llm_with_fallback(messages, **kwargs)
+    return response, round(time.perf_counter() - started, 4)
+
 
 def parse_agent_action(llm_output: str) -> Tuple[Optional[str], Optional[Dict[str, Any]], Optional[str], Optional[str]]:
     """Parse Thought, Action, Action Input, or Final Answer from model response."""
@@ -139,8 +201,12 @@ def run_agent(
     total_prompt_tokens = 0
     total_completion_tokens = 0
     total_cost_usd = 0.0
+    providers = []
+    models = []
     all_retrieved_chunks = []
     observations = []
+    search_count = 0
+    read_page_count = 0
     
     messages = []
     if conversation_history:
@@ -163,10 +229,23 @@ def run_agent(
             break
             
         # 2. Call LLM
-        llm_resp = call_llm_with_fallback(messages, system_prompt=AGENT_SYSTEM_PROMPT, temperature=0.0)
+        llm_resp, llm_latency = _timed_llm_call(
+            messages, system_prompt=AGENT_SYSTEM_PROMPT, temperature=0.0
+        )
         total_prompt_tokens += llm_resp["prompt_tokens"]
         total_completion_tokens += llm_resp["completion_tokens"]
         total_cost_usd += llm_resp["cost_usd"]
+        if llm_resp.get("provider"):
+            providers.append(llm_resp["provider"])
+        if llm_resp.get("model"):
+            models.append(llm_resp["model"])
+        steps.append({
+            "step": step_num,
+            "action": "llm_call",
+            "action_args": {},
+            "observation": None,
+            "usage": {**_llm_trace(llm_resp), "latency_seconds": llm_latency},
+        })
 
         if llm_resp.get("provider") == "none":
             # Keep the application useful and honest without silently inventing an
@@ -193,6 +272,28 @@ def run_agent(
         action, action_args, thought, answer = parse_agent_action(reply_text)
         
         if answer is not None:
+            answer_citations = extract_citations_from_text(answer)
+            answer_is_refusal = bool(REFUSAL_TERMS.search(answer))
+            answer_is_usable = bool(answer.strip()) and (
+                bool(answer_citations)
+                or (answer_is_refusal and search_count > 0 and read_page_count > 0)
+            ) and not _contains_tool_protocol(answer)
+            if not answer_is_usable:
+                observation = (
+                    "[Instruction] The proposed final answer is empty or lacks "
+                    "claim-level citations. Search or read the exact source page, "
+                    "then provide a non-empty Final Answer with citations."
+                )
+                steps.append({
+                    "step": step_num,
+                    "thought": thought,
+                    "action": "invalid_final_answer",
+                    "action_args": {},
+                    "observation": observation,
+                })
+                messages.append({"role": "assistant", "content": reply_text})
+                messages.append({"role": "user", "content": f"Observation: {observation}"})
+                continue
             final_answer = answer
             steps.append({
                 "step": step_num,
@@ -243,10 +344,18 @@ def run_agent(
             elif action == "search_documents":
                 q = action_args.get("query", question)
                 doc_filt = action_args.get("document_filter") or action_args.get("document")
-                observation = tool_fn(query=q, document_filter=doc_filt)
+                search_results = _search_documents(q, document_filter=doc_filt)
+                all_retrieved_chunks.extend(search_results)
+                search_count += 1
+                observation = _format_search_results(search_results, q)
             elif action == "read_page":
                 doc = action_args.get("document", "")
                 page = int(action_args.get("page_number", action_args.get("page", 1)))
+                normalized_doc = doc if str(doc).lower().endswith(".pdf") else f"{doc}.pdf"
+                page_chunks = get_page_chunks(normalized_doc, page)
+                all_retrieved_chunks.extend(page_chunks)
+                if page_chunks:
+                    read_page_count += 1
                 observation = tool_fn(document=doc, page_number=page)
             elif action == "calculate":
                 expr = action_args.get("expression", action_args.get("expr", ""))
@@ -269,14 +378,80 @@ def run_agent(
         
     # If loop ended without final answer, force synthesis
     if final_answer is None and total_cost_usd < PER_TURN_BUDGET_USD:
-        messages.append({"role": "user", "content": "You have reached the maximum search steps. Provide your Final Answer now based strictly on the observations above."})
-        forced_resp = call_llm_with_fallback(messages, system_prompt=AGENT_SYSTEM_PROMPT, temperature=0.0)
+        messages.append({
+            "role": "user",
+            "content": (
+                "You have reached the maximum search steps. Write the final answer now "
+                "from the evidence above. Return answer text only; do not emit a tool call "
+                "or the Thought/Action protocol."
+            ),
+        })
+        forced_resp, forced_latency = _timed_llm_call(
+            messages,
+            system_prompt=FINAL_SYNTHESIS_SYSTEM_PROMPT,
+            temperature=0.0,
+        )
         total_prompt_tokens += forced_resp["prompt_tokens"]
         total_completion_tokens += forced_resp["completion_tokens"]
         total_cost_usd += forced_resp["cost_usd"]
+        if forced_resp.get("provider"):
+            providers.append(forced_resp["provider"])
+        if forced_resp.get("model"):
+            models.append(forced_resp["model"])
+        steps.append({
+            "step": len(steps) + 1,
+            "action": "forced_synthesis_llm_call",
+            "action_args": {},
+            "observation": None,
+            "usage": {**_llm_trace(forced_resp), "latency_seconds": forced_latency},
+        })
         
-        _, _, _, forced_ans = parse_agent_action(forced_resp["text"])
-        final_answer = forced_ans or forced_resp["text"]
+        forced_action, _, _, forced_ans = parse_agent_action(forced_resp["text"])
+        if forced_ans and not _contains_tool_protocol(forced_ans):
+            final_answer = forced_ans
+        elif forced_action or forced_ans:
+            evidence = "\n\n".join(
+                message["content"]
+                for message in messages
+                if message["role"] == "user" and message["content"].startswith("Observation:")
+            )
+            retry_resp, retry_latency = _timed_llm_call(
+                [{
+                    "role": "user",
+                    "content": (
+                        f"Question: {question}\n\n"
+                        f"Evidence collected from the reports:\n{evidence}\n\n"
+                        "Answer the question using only this evidence. Return answer text "
+                        "only, with citations, and never emit a tool call."
+                    ),
+                }],
+                system_prompt=FINAL_SYNTHESIS_SYSTEM_PROMPT,
+                temperature=0.0,
+            )
+            total_prompt_tokens += retry_resp["prompt_tokens"]
+            total_completion_tokens += retry_resp["completion_tokens"]
+            total_cost_usd += retry_resp["cost_usd"]
+            if retry_resp.get("provider"):
+                providers.append(retry_resp["provider"])
+            if retry_resp.get("model"):
+                models.append(retry_resp["model"])
+            steps.append({
+                "step": len(steps) + 1,
+                "action": "synthesis_retry_llm_call",
+                "action_args": {},
+                "observation": None,
+                "usage": {**_llm_trace(retry_resp), "latency_seconds": retry_latency},
+            })
+            _, _, _, retry_ans = parse_agent_action(retry_resp["text"])
+            if retry_ans and not _contains_tool_protocol(retry_ans):
+                final_answer = retry_ans
+            else:
+                final_answer = (
+                    "The available report evidence was insufficient to produce a "
+                    "grounded answer without another tool call."
+                )
+        else:
+            final_answer = forced_resp["text"]
     elif final_answer is None:
         final_answer = (
             "The per-turn budget was reached before a final answer could be generated. "
@@ -292,6 +467,8 @@ def run_agent(
         "usage": {
             "usd": round(total_cost_usd, 6),
             "prompt_tokens": total_prompt_tokens,
-            "completion_tokens": total_completion_tokens
+            "completion_tokens": total_completion_tokens,
+            "providers": sorted(set(providers)),
+            "models": sorted(set(models)),
         }
     }

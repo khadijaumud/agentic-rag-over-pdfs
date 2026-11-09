@@ -1,0 +1,448 @@
+{
+  "label": "gemini-stopfix-agent",
+  "scorecard": {
+    "answer accuracy": 0.308,
+    "correct refusals on unanswerable": 1.0,
+    "evidence cited": 0.25,
+    "seconds per question": 14.143,
+    "usd for the whole set": 0.0086
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "kind": "number",
+      "answerable": true,
+      "expected": "294000",
+      "answer": "N/A [HCA Healthcare, Inc..pdf]",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 26.95,
+      "usd": 0.000413,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5364,
+      "completion_tokens": 30,
+      "error": null
+    },
+    {
+      "id": "q02",
+      "kind": "number",
+      "answerable": true,
+      "expected": "406100000",
+      "answer": "According to the Consolidated Statements of Cash Flows in the Sonic Automotive, Inc. annual report (page 92), the Net cash provided by operating activities (Cash flow from operations) for the year ended December 31, 2022 (the last reported period) was **$406.1 million** [Sonic Automotive, Inc..pdf, p.92].",
+      "citations": [
+        {
+          "document": "Sonic Automotive, Inc..pdf",
+          "page": 92
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 15.24,
+      "usd": 0.001202,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 13969,
+      "completion_tokens": 518,
+      "error": null
+    },
+    {
+      "id": "q03",
+      "kind": "number",
+      "answerable": true,
+      "expected": "31400000",
+      "answer": "Data not available in the Albany International Corp. annual report.",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 12.73,
+      "usd": 0.00043,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5363,
+      "completion_tokens": 88,
+      "error": null
+    },
+    {
+      "id": "q04",
+      "kind": "number",
+      "answerable": true,
+      "expected": "2300",
+      "answer": "N/A [Albany International Corp..pdf, p. 1-130]",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 1
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 14.73,
+      "usd": 0.000426,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5342,
+      "completion_tokens": 89,
+      "error": null
+    },
+    {
+      "id": "q05",
+      "kind": "number",
+      "answerable": true,
+      "expected": "9686067000",
+      "answer": "Thought: I need to search the Origin Bancorp, Inc. annual report for \"Total assets\" on the balance sheet at year-end.\nAction: search_documents\nAction Input: {\"query\": \"Total assets consolidated balance sheets\", \"document_filter\": \"Origin Bancorp, Inc..pdf\"}",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 13.17,
+      "usd": 0.000404,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 4779,
+      "completion_tokens": 155,
+      "error": null
+    },
+    {
+      "id": "q06",
+      "kind": "number",
+      "answerable": true,
+      "expected": "39.3",
+      "answer": "The total power generation capacity of RWE AG at the end of the period was 39.3 GW [RWE AG.pdf, p. 47].",
+      "citations": [
+        {
+          "document": "RWE AG.pdf",
+          "page": 47
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 5.62,
+      "usd": 0.000193,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 1744,
+      "completion_tokens": 209,
+      "error": null
+    },
+    {
+      "id": "q07",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Director"
+      ],
+      "answer": "N/A",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 12.73,
+      "usd": 0.000454,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5374,
+      "completion_tokens": 171,
+      "error": null
+    },
+    {
+      "id": "q08",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Chief Legal Counsel",
+        "Chief Financial Officer"
+      ],
+      "answer": "N/A [Origin Bancorp, Inc..pdf]",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 12.71,
+      "usd": 0.000465,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5395,
+      "completion_tokens": 199,
+      "error": null
+    },
+    {
+      "id": "q09",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "President and Chief Executive Officer"
+      ],
+      "answer": "N/A [Westwater Resources, Inc..pdf]",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 13.96,
+      "usd": 0.000432,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5343,
+      "completion_tokens": 102,
+      "error": null
+    },
+    {
+      "id": "q10",
+      "kind": "name",
+      "answerable": true,
+      "expected": "Datalogic",
+      "answer": "Data not available in EUR for comparison across all listed companies. [Atreca, Inc..pdf, p.83]",
+      "citations": [
+        {
+          "document": "Atreca, Inc..pdf",
+          "page": 83
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 16.4,
+      "usd": 0.000564,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 7359,
+      "completion_tokens": 44,
+      "error": null
+    },
+    {
+      "id": "q11",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "The HCA Healthcare, Inc. annual report does not mention any changes to its dividend policy (False). [HCA Healthcare, Inc..pdf, p. 1-80]",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 1
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 14.57,
+      "usd": 0.000588,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 6849,
+      "completion_tokens": 245,
+      "error": null
+    },
+    {
+      "id": "q12",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "True",
+      "answer": "Thought: I have enough evidence from the search results. The report discusses accounting policies regarding \"Merger reserve\", \"Restructuring costs\", and \"Merger relief reserve\" on page 45, but does it mention any specific mergers or acquisitions? Wait, let's verify if there are other mentions or if this is the only one. Let's read page 45 to be sure.\nAction: read_page\nAction Input: {\"document\": \"Brave Bison Group plc.pdf\", \"page_number\": 45}",
+      "citations": [
+        {
+          "document": "Brave Bison Group plc.pdf",
+          "page": 45
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 12.75,
+      "usd": 0.000479,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5526,
+      "completion_tokens": 211,
+      "error": null
+    },
+    {
+      "id": "q13",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "False. The annual report of Seiko Epson Corporation outlines its dividend policy [Seiko Epson Corporation.pdf, p. 67], but does not announce any changes to it.",
+      "citations": [
+        {
+          "document": "Seiko Epson Corporation.pdf",
+          "page": 67
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 14.71,
+      "usd": 0.000913,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 10697,
+      "completion_tokens": 368,
+      "error": null
+    },
+    {
+      "id": "q14",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "N/A [Armadale Capital Plc.pdf, p.22]",
+      "citations": [
+        {
+          "document": "Armadale Capital Plc.pdf",
+          "page": 22
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 14.6,
+      "usd": 0.00078,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 8557,
+      "completion_tokens": 461,
+      "error": null
+    },
+    {
+      "id": "q15",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "Data not available in 1-800-FLOWERS.COM, INC..pdf regarding the exact number of fulfillment centers at year-end. [1-800-FLOWERS.COM, INC..pdf, p. 1-100]",
+      "citations": [
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 1
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 13.59,
+      "usd": 0.000444,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5416,
+      "completion_tokens": 128,
+      "error": null
+    },
+    {
+      "id": "q16",
+      "kind": "names",
+      "answerable": false,
+      "expected": null,
+      "answer": "Data not available in the Albany International Corp. annual report.",
+      "citations": [],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 11.83,
+      "usd": 0.000396,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5163,
+      "completion_tokens": 30,
+      "error": null
+    }
+  ]
+}

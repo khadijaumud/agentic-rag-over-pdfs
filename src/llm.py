@@ -4,8 +4,8 @@ Includes prompt injection defense.
 """
 
 import os
-import json
 import time
+import requests
 from typing import List, Dict, Any, Optional
 
 from src.config import (
@@ -13,12 +13,16 @@ from src.config import (
     GROQ_API_KEY,
     OPENAI_API_KEY,
     PRIMARY_LLM_MODEL,
-    FALLBACK_LLM_MODEL
+    FALLBACK_LLM_MODEL,
+    LLM_TIMEOUT_SECONDS,
 )
 
 # Cost estimations per 1,000,000 tokens
 MODEL_COSTS = {
     "gemini-2.5-flash": {"input": 0.075, "output": 0.30},
+    "gemini-3.8-flash": {"input": 0.075, "output": 0.30},
+    "gemini-3.1-flash-lite": {"input": 0.075, "output": 0.30},
+    "gemini-flash-lite-latest": {"input": 0.075, "output": 0.30},
     "gemini-1.5-flash": {"input": 0.075, "output": 0.30},
     "llama-3.3-70b-versatile": {"input": 0.59, "output": 0.79},
     "mock": {"input": 0.0, "output": 0.0}
@@ -52,85 +56,51 @@ def call_gemini(
     model: str = PRIMARY_LLM_MODEL,
     temperature: float = 0.0
 ) -> Dict[str, Any]:
-    """Call Google Gemini API using google-genai or google.generativeai SDK."""
+    """Call Google Gemini with a bounded request timeout."""
     api_key = os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)
     if not api_key:
         raise ValueError("GEMINI_API_KEY not configured.")
 
-    try:
-        from google import genai
-        client = genai.Client(api_key=api_key)
-        
-        # Build contents
-        contents = []
-        for m in messages:
-            role = "user" if m["role"] in ("user", "system") else "model"
-            contents.append({"role": role, "parts": [{"text": m["content"]}]})
-            
-        config = {
-            "temperature": temperature,
-            "system_instruction": system_prompt
-        }
-        
-        response = client.models.generate_content(
-            model=model,
-            contents=contents,
-            config=config
-        )
-        
-        reply_text = response.text or ""
-        # Extract usage metadata
-        prompt_tokens = 0
-        completion_tokens = 0
-        if hasattr(response, "usage_metadata") and response.usage_metadata:
-            prompt_tokens = getattr(response.usage_metadata, "prompt_token_count", 0) or 0
-            completion_tokens = getattr(response.usage_metadata, "candidates_token_count", 0) or 0
-        else:
-            # Fallback estimation
-            prompt_tokens = sum(len(m["content"]) // 4 for m in messages)
-            completion_tokens = len(reply_text) // 4
-            
-        cost = estimate_cost(model, prompt_tokens, completion_tokens)
-        
-        return {
-            "text": reply_text,
-            "prompt_tokens": prompt_tokens,
-            "completion_tokens": completion_tokens,
-            "cost_usd": cost,
-            "model": model,
-            "provider": "gemini"
-        }
-    except Exception as e:
-        # Try google.generativeai legacy fallback
-        import google.generativeai as legacy_genai
-        legacy_genai.configure(api_key=api_key)
-        gemini_model = legacy_genai.GenerativeModel(
-            model_name=model,
-            system_instruction=system_prompt
-        )
-        
-        history = []
-        for m in messages[:-1]:
-            role = "user" if m["role"] in ("user", "system") else "model"
-            history.append({"role": role, "parts": [m["content"]]})
-        
-        chat = gemini_model.start_chat(history=history)
-        last_msg = messages[-1]["content"] if messages else ""
-        resp = chat.send_message(last_msg, generation_config={"temperature": temperature})
-        
-        reply_text = resp.text or ""
+    from google import genai
+    client = genai.Client(
+        api_key=api_key,
+        http_options=genai.types.HttpOptions(timeout=LLM_TIMEOUT_SECONDS * 1000),
+    )
+    contents = []
+    for m in messages:
+        role = "user" if m["role"] in ("user", "system") else "model"
+        contents.append({"role": role, "parts": [{"text": m["content"]}]})
+
+    config = {
+        "temperature": temperature,
+        "system_instruction": system_prompt
+    }
+
+    response = client.models.generate_content(
+        model=model,
+        contents=contents,
+        config=config
+    )
+    reply_text = response.text or ""
+    prompt_tokens = 0
+    completion_tokens = 0
+    if hasattr(response, "usage_metadata") and response.usage_metadata:
+        prompt_tokens = getattr(response.usage_metadata, "prompt_token_count", 0) or 0
+        completion_tokens = getattr(response.usage_metadata, "candidates_token_count", 0) or 0
+    else:
         prompt_tokens = sum(len(m["content"]) // 4 for m in messages)
         completion_tokens = len(reply_text) // 4
-        cost = estimate_cost(model, prompt_tokens, completion_tokens)
-        
-        return {
-            "text": reply_text,
-            "prompt_tokens": prompt_tokens,
-            "completion_tokens": completion_tokens,
-            "cost_usd": cost,
-            "model": model,
-            "provider": "gemini-legacy"
-        }
+
+    cost = estimate_cost(model, prompt_tokens, completion_tokens)
+
+    return {
+        "text": reply_text,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "cost_usd": cost,
+        "model": model,
+        "provider": "gemini"
+    }
 
 def call_groq(
     messages: List[Dict[str, Any]],
@@ -144,7 +114,7 @@ def call_groq(
         raise ValueError("GROQ_API_KEY not configured.")
         
     from groq import Groq
-    client = Groq(api_key=api_key)
+    client = Groq(api_key=api_key, timeout=LLM_TIMEOUT_SECONDS)
     
     formatted = [{"role": "system", "content": system_prompt}]
     for m in messages:
@@ -171,6 +141,42 @@ def call_groq(
         "provider": "groq"
     }
 
+def call_ollama(
+    messages: List[Dict[str, Any]],
+    system_prompt: str = SYSTEM_PROMPT_DEFAULT,
+    model: str = "llama3.2",
+    temperature: float = 0.0,
+) -> Dict[str, Any]:
+    """Call a local Ollama server as a bounded, configurable fallback."""
+    base_url = os.getenv("OLLAMA_URL", "http://ollama:11434").rstrip("/")
+    prompt = "\n\n".join(f"{m['role']}: {m['content']}" for m in messages)
+    response = requests.post(
+        f"{base_url}/api/chat",
+        json={
+            "model": model,
+            "stream": False,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            "options": {"temperature": temperature},
+        },
+        timeout=LLM_TIMEOUT_SECONDS,
+    )
+    response.raise_for_status()
+    body = response.json()
+    text = body.get("message", {}).get("content", "")
+    prompt_tokens = int(body.get("prompt_eval_count", sum(len(m["content"]) // 4 for m in messages)))
+    completion_tokens = int(body.get("eval_count", len(text) // 4))
+    return {
+        "text": text,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "cost_usd": 0.0,
+        "model": model,
+        "provider": "ollama",
+    }
+
 def call_llm_with_fallback(
     messages: List[Dict[str, Any]],
     system_prompt: str = SYSTEM_PROMPT_DEFAULT,
@@ -180,16 +186,41 @@ def call_llm_with_fallback(
     """Invoke primary LLM (Gemini), automatically failing over to Groq if rate-limited or unavailable."""
     errors = []
     
+    gemini_key = os.getenv("GEMINI_API_KEY", GEMINI_API_KEY)
+    groq_key = os.getenv("GROQ_API_KEY", GROQ_API_KEY)
+    has_gemini = bool(gemini_key and gemini_key != "your_gemini_api_key_here")
+    has_groq = bool(groq_key and groq_key != "your_groq_api_key_here")
+
     # 1. Try Gemini
-    if os.getenv("GEMINI_API_KEY", GEMINI_API_KEY):
+    if has_gemini:
         try:
             return call_gemini(messages, system_prompt=system_prompt, model=preferred_model, temperature=temperature)
         except Exception as e:
             errors.append(f"Gemini error: {e}")
-            print(f"[LLM Warning] Gemini failed: {e}. Attempting fallback...")
+            if "503" in str(e) or "UNAVAILABLE" in str(e).upper():
+                try:
+                    time.sleep(2)
+                    return call_gemini(messages, system_prompt=system_prompt, model=preferred_model, temperature=temperature)
+                except Exception as retry_error:
+                    errors.append(f"Gemini retry error: {retry_error}")
+                    print(f"[LLM Warning] Gemini retry failed: {retry_error}. Attempting fallback...")
+            else:
+                print(f"[LLM Warning] Gemini failed: {e}. Attempting fallback...")
     
+    fallback_provider = os.getenv("FALLBACK_PROVIDER", "groq").lower()
+    if fallback_provider == "ollama":
+        try:
+            return call_ollama(
+                messages,
+                system_prompt=system_prompt,
+                model=os.getenv("FALLBACK_LLM_MODEL", "llama3.2"),
+                temperature=temperature,
+            )
+        except Exception as e:
+            errors.append(f"Ollama error: {e}")
+            print(f"[LLM Warning] Ollama fallback failed: {e}.")
     # 2. Try Groq fallback
-    if os.getenv("GROQ_API_KEY", GROQ_API_KEY):
+    elif has_groq:
         try:
             return call_groq(messages, system_prompt=system_prompt, model=FALLBACK_LLM_MODEL, temperature=temperature)
         except Exception as e:
@@ -197,14 +228,7 @@ def call_llm_with_fallback(
             print(f"[LLM Warning] Groq fallback failed: {e}.")
             
     # 3. If no API keys or both failed, check if this is an offline/mock run
-    if not os.getenv("GEMINI_API_KEY", GEMINI_API_KEY) and not os.getenv("GROQ_API_KEY", GROQ_API_KEY):
-        return {
-            "text": "ERROR: No LLM API key configured (GEMINI_API_KEY or GROQ_API_KEY). Please set GEMINI_API_KEY in your .env file.",
-            "prompt_tokens": 0,
-            "completion_tokens": 0,
-            "cost_usd": 0.0,
-            "model": "offline",
-            "provider": "none"
-        }
+    if not has_gemini and not has_groq and fallback_provider != "ollama":
+        raise RuntimeError("No LLM provider configured. Set GEMINI_API_KEY, GROQ_API_KEY, or FALLBACK_PROVIDER=ollama.")
         
     raise RuntimeError(f"All LLM providers failed: {'; '.join(errors)}")

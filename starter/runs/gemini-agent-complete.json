@@ -1,0 +1,491 @@
+{
+  "label": "gemini-agent-complete",
+  "scorecard": {
+    "answer accuracy": 0.538,
+    "correct refusals on unanswerable": 1.0,
+    "evidence cited": 0.583,
+    "seconds per question": 15.068,
+    "usd for the whole set": 0.0128
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "kind": "number",
+      "answerable": true,
+      "expected": "294000",
+      "answer": "At the end of 2022, HCA Healthcare, Inc. reported having nearly 294,000 colleagues and 45,000 physicians on its medical staff [HCA Healthcare, Inc..pdf, p.3].",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 3
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 43.4,
+      "usd": 0.000285,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 2863,
+      "completion_tokens": 233,
+      "error": null
+    },
+    {
+      "id": "q02",
+      "kind": "number",
+      "answerable": true,
+      "expected": "406100000",
+      "answer": "According to the Consolidated Statements of Cash Flows for Sonic Automotive, Inc., the net cash provided by operating activities for the year ended December 31, 2022, was $381.0 million [Sonic Automotive, Inc..pdf, p.92].",
+      "citations": [
+        {
+          "document": "Sonic Automotive, Inc..pdf",
+          "page": 92
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 19.1,
+      "usd": 0.002587,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 31206,
+      "completion_tokens": 819,
+      "error": null
+    },
+    {
+      "id": "q03",
+      "kind": "number",
+      "answerable": true,
+      "expected": "31400000",
+      "answer": "N/A. The annual report provides a breakdown of research and development expenses by business segment (Machine Clothing and Albany Engineered Composites) [Albany International Corp..pdf, p.39], but it does not report a specific value for \"R&D spending on advanced programs.\"",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 39
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 6.71,
+      "usd": 0.000584,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 5908,
+      "completion_tokens": 470,
+      "error": null
+    },
+    {
+      "id": "q04",
+      "kind": "number",
+      "answerable": true,
+      "expected": "2300",
+      "answer": "N/A. The report does not provide a value for a year-end patent portfolio (aerospace tech) [Albany International Corp..pdf, p. 16, 94].",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 16
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 13.66,
+      "usd": 0.002175,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 26577,
+      "completion_tokens": 606,
+      "error": null
+    },
+    {
+      "id": "q05",
+      "kind": "number",
+      "answerable": true,
+      "expected": "9686067000",
+      "answer": "For Origin Bancorp, Inc., the value of Total assets at year-end was $9,686,067,000 for 2022 and $7,861,285,000 for 2021 [Origin Bancorp, Inc..pdf, p.6].",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 6
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 3.88,
+      "usd": 0.000463,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 5342,
+      "completion_tokens": 210,
+      "error": null
+    },
+    {
+      "id": "q06",
+      "kind": "number",
+      "answerable": true,
+      "expected": "39.3",
+      "answer": "The total power generation capacity of RWE AG at the end of the period was 39.3 GW [RWE AG.pdf, p.47].",
+      "citations": [
+        {
+          "document": "RWE AG.pdf",
+          "page": 47
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 9.67,
+      "usd": 0.000215,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 2115,
+      "completion_tokens": 190,
+      "error": null
+    },
+    {
+      "id": "q07",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Director"
+      ],
+      "answer": "The information regarding leadership position changes at Datalogic during the reporting period is not available in the provided document [Datalogic.pdf].",
+      "citations": [
+        {
+          "document": "Datalogic.pdf",
+          "page": 148
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 30.71,
+      "usd": 0.000618,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 6733,
+      "completion_tokens": 373,
+      "error": null
+    },
+    {
+      "id": "q08",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Chief Legal Counsel",
+        "Chief Financial Officer"
+      ],
+      "answer": "The report does not mention any changes to leadership positions during the reporting period [Origin Bancorp, Inc..pdf, p.40].",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 40
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 19.12,
+      "usd": 0.000721,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 7794,
+      "completion_tokens": 457,
+      "error": null
+    },
+    {
+      "id": "q09",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "President and Chief Executive Officer"
+      ],
+      "answer": "N/A",
+      "citations": [
+        {
+          "document": "Westwater Resources, Inc..pdf",
+          "page": 1
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 13.58,
+      "usd": 0.000503,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 5273,
+      "completion_tokens": 356,
+      "error": null
+    },
+    {
+      "id": "q10",
+      "kind": "name",
+      "answerable": true,
+      "expected": "Datalogic",
+      "answer": "Based on the provided documents, the net income (or net loss) for the companies is as follows:\n\n*   **Atreca, Inc.**: The net loss for the year ended December 31, 2022, was $97,157,000 [Atreca, Inc..pdf, p.84].\n*   **INMUNE BIO INC.**, **Datalogic**, **NuCana plc**, and **RWE AG**: The requested net income data in EUR is not available in the provided documents.\n\nAs the information for the other companies is not available, they are excluded from the comparison. Therefore, Atreca, Inc. is the only company remaining.",
+      "citations": [
+        {
+          "document": "Atreca, Inc..pdf",
+          "page": 84
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 23.31,
+      "usd": 0.001804,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 19739,
+      "completion_tokens": 1077,
+      "error": null
+    },
+    {
+      "id": "q11",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "False. The annual report does not announce any changes to the dividend policy; it only notes that the declaration, amount, and timing of dividends remain subject to the Board of Directors' determination [HCA Healthcare, Inc..pdf, p.59].",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 59
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 8.44,
+      "usd": 0.000523,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 5018,
+      "completion_tokens": 488,
+      "error": null
+    },
+    {
+      "id": "q12",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "True",
+      "answer": "Yes, Brave Bison Group plc mentions acquisitions in their annual report. The report outlines the accounting policy for business combinations using the acquisition method [Brave Bison Group plc.pdf, p.40] and provides a table detailing the fair value of assets acquired and liabilities assumed [Brave Bison Group plc.pdf, p.61].",
+      "citations": [
+        {
+          "document": "Brave Bison Group plc.pdf",
+          "page": 40
+        },
+        {
+          "document": "Brave Bison Group plc.pdf",
+          "page": 61
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 13.0,
+      "usd": 0.000378,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 3705,
+      "completion_tokens": 332,
+      "error": null
+    },
+    {
+      "id": "q13",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "False. The Seiko Epson Corporation annual report outlines the company's dividend policy, which includes a medium-term target of a 40% consolidated dividend payout ratio, but it does not announce any changes to this policy [Seiko Epson Corporation.pdf, p.67].",
+      "citations": [
+        {
+          "document": "Seiko Epson Corporation.pdf",
+          "page": 67
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 8.56,
+      "usd": 0.00038,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 3841,
+      "completion_tokens": 311,
+      "error": null
+    },
+    {
+      "id": "q14",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "N/A. The annual report for Armadale Capital Plc does not report revenue or cost of sales, as the company's exploration costs are capitalized and the income statement reflects only central Group overheads and impairments [Armadale Capital Plc.pdf, p. 22, p. 40].",
+      "citations": [
+        {
+          "document": "Armadale Capital Plc.pdf",
+          "page": 22
+        },
+        {
+          "document": "Armadale Capital Plc.pdf",
+          "page": 40
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 10.21,
+      "usd": 0.000627,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 6568,
+      "completion_tokens": 451,
+      "error": null
+    },
+    {
+      "id": "q15",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "Data not available",
+      "citations": [
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 17
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 8.0,
+      "usd": 0.000479,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 5059,
+      "completion_tokens": 331,
+      "error": null
+    },
+    {
+      "id": "q16",
+      "kind": "names",
+      "answerable": false,
+      "expected": null,
+      "answer": "The annual report for Albany International Corp. does not name specific new products launched; it mentions that the company engages in research and development for \"new technology platforms, products and product enhancements\" and that innovation has resulted in \"new MC products and/or enhancements,\" but it does not provide a list of specific product names [Albany International Corp..pdf, p.16].",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 16
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 9.73,
+      "usd": 0.000466,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 4799,
+      "completion_tokens": 352,
+      "error": null
+    }
+  ]
+}

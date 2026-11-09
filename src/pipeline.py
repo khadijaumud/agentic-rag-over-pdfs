@@ -8,18 +8,47 @@ from typing import Dict, Any, List, Optional
 from src.retrieval import hybrid_search
 from src.llm import call_llm_with_fallback
 
-CITATION_REGEX = re.compile(r"\[([A-Za-z0-9\s,\.\-_]+?)\s*,\s*p(?:age|\.)?\s*(\d+)\]", re.IGNORECASE)
+CITATION_REGEX = re.compile(
+    r"(?P<document>[A-Za-z0-9][A-Za-z0-9\s,.\-_&()']*?\.pdf)\s*,\s*"
+    r"p(?:age|\.)?\s*(?P<page>\d+)",
+    re.IGNORECASE,
+)
+BRACKET_CITATION_REGEX = re.compile(r"\[([^\]]+)\]")
+PAGE_REGEX = re.compile(r"\bp(?:age|\.)?\s*(\d+)", re.IGNORECASE)
 
 def extract_citations_from_text(text: str, fallback_chunks: Optional[List[Dict[str, Any]]] = None) -> List[Dict[str, Any]]:
     """Extract [Doc.pdf, p.X] citations from text; fallback to retrieved chunks if none in text."""
     found = []
     seen = set()
     
-    for match in CITATION_REGEX.finditer(text):
-        doc = match.group(1).strip()
-        page = int(match.group(2))
+    bracket_spans = []
+    for bracket in BRACKET_CITATION_REGEX.finditer(text):
+        body = bracket.group(1)
+        document_match = re.search(
+            r"(?P<document>[A-Za-z0-9][A-Za-z0-9\s,.\-_&()']*?\.pdf)",
+            body,
+            re.IGNORECASE,
+        )
+        if not document_match:
+            continue
+        doc = document_match.group("document").strip()
+        doc = re.sub(r"(?:\.pdf)+$", ".pdf", doc, flags=re.IGNORECASE)
+        for page_match in PAGE_REGEX.finditer(body[document_match.end():]):
+            key = (doc.lower(), int(page_match.group(1)))
+            if key not in seen:
+                seen.add(key)
+                found.append({"document": doc, "page": key[1]})
+        bracket_spans.append(bracket.span())
+
+    unbracketed = text
+    for start, end in reversed(bracket_spans):
+        unbracketed = unbracketed[:start] + unbracketed[end:]
+    for match in CITATION_REGEX.finditer(unbracketed):
+        doc = match.group("document").strip()
+        page = int(match.group("page"))
         if not doc.lower().endswith(".pdf"):
             doc = doc + ".pdf"
+        doc = re.sub(r"(?:\.pdf)+$", ".pdf", doc, flags=re.IGNORECASE)
         key = (doc.lower(), page)
         if key not in seen:
             seen.add(key)
@@ -37,7 +66,7 @@ def extract_citations_from_text(text: str, fallback_chunks: Optional[List[Dict[s
 
 def run_single_pass_pipeline(
     question: str,
-    top_k: int = 5,
+    top_k: int = 8,
     document_filter: Optional[str] = None
 ) -> Dict[str, Any]:
     """Execute a single-pass RAG retrieval + LLM synthesis."""
@@ -86,7 +115,9 @@ Answer:"""
         "usage": {
             "usd": llm_resp["cost_usd"],
             "prompt_tokens": llm_resp["prompt_tokens"],
-            "completion_tokens": llm_resp["completion_tokens"]
+            "completion_tokens": llm_resp["completion_tokens"],
+            "provider": llm_resp.get("provider"),
+            "model": llm_resp.get("model"),
         },
         "retrieved_chunks": retrieved
     }

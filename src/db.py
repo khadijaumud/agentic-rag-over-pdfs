@@ -5,7 +5,8 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 from src.config import DB_PATH
 
-def get_connection(db_path: Path = DB_PATH) -> sqlite3.Connection:
+def get_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
+    db_path = db_path or DB_PATH
     db_path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(db_path))
     conn.row_factory = sqlite3.Row
@@ -235,7 +236,11 @@ def save_message(msg_id: str, conv_id: str, role: str, content: str, citations: 
         ))
     conn.close()
 
-def get_conversation_history(conv_id: str, limit: int = 10) -> List[Dict[str, Any]]:
+def get_conversation_history(
+    conv_id: str,
+    limit: int = 10,
+    max_tokens: Optional[int] = None,
+) -> List[Dict[str, Any]]:
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
@@ -254,7 +259,18 @@ def get_conversation_history(conv_id: str, limit: int = 10) -> List[Dict[str, An
         if d.get("agent_steps_json"):
             d["agent_steps"] = json.loads(d["agent_steps_json"])
         res.append(d)
-    return res[-limit:]
+    recent = res[-limit:]
+    if max_tokens is None:
+        return recent
+    selected = []
+    token_total = 0
+    for message in reversed(recent):
+        message_tokens = max(1, len(message["content"]) // 4)
+        if selected and token_total + message_tokens > max_tokens:
+            break
+        selected.append(message)
+        token_total += message_tokens
+    return list(reversed(selected))
 
 def record_usage(user_id: str, conv_id: str, prompt_tokens: int, completion_tokens: int, cost_usd: float, model: str) -> None:
     conn = get_connection()

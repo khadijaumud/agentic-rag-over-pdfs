@@ -1,0 +1,456 @@
+{
+  "label": "gemini-agent-final",
+  "scorecard": {
+    "answer accuracy": 0.538,
+    "correct refusals on unanswerable": 1.0,
+    "evidence cited": 0.333,
+    "seconds per question": 18.247,
+    "usd for the whole set": 0.0093
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "kind": "number",
+      "answerable": true,
+      "expected": "294000",
+      "answer": "As of December 31, 2022, HCA Healthcare, Inc. had nearly 294,000 colleagues and 45,000 physicians on its medical staff [HCA Healthcare, Inc..pdf, p.3].",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 3
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 23.91,
+      "usd": 0.000314,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 3310,
+      "completion_tokens": 221,
+      "error": null
+    },
+    {
+      "id": "q02",
+      "kind": "number",
+      "answerable": true,
+      "expected": "406100000",
+      "answer": "According to the annual report for Sonic Automotive, Inc., the net cash provided by operating activities for the year ended December 31, 2022, was $406.1 million [Sonic Automotive, Inc..pdf, p.92].",
+      "citations": [
+        {
+          "document": "Sonic Automotive, Inc..pdf",
+          "page": 92
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 6.31,
+      "usd": 0.000587,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 6737,
+      "completion_tokens": 272,
+      "error": null
+    },
+    {
+      "id": "q03",
+      "kind": "number",
+      "answerable": true,
+      "expected": "31400000",
+      "answer": "N/A",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 8.78,
+      "usd": 0.000402,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 4261,
+      "completion_tokens": 276,
+      "error": null
+    },
+    {
+      "id": "q04",
+      "kind": "number",
+      "answerable": true,
+      "expected": "2300",
+      "answer": "N/A",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 94.78,
+      "usd": 0.000291,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 2908,
+      "completion_tokens": 242,
+      "error": null
+    },
+    {
+      "id": "q05",
+      "kind": "number",
+      "answerable": true,
+      "expected": "9686067000",
+      "answer": "As of December 31, 2022, the Total assets for Origin Bancorp, Inc. were $9,686,067 thousand [Origin Bancorp, Inc..pdf, p.191].",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 191
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 5.52,
+      "usd": 0.000632,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 7369,
+      "completion_tokens": 264,
+      "error": null
+    },
+    {
+      "id": "q06",
+      "kind": "number",
+      "answerable": true,
+      "expected": "39.3",
+      "answer": "The total power generation capacity of RWE AG at the end of the period was 39.3 GW [RWE AG.pdf, p.47].",
+      "citations": [
+        {
+          "document": "RWE AG.pdf",
+          "page": 47
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 5.96,
+      "usd": 0.00016,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 1686,
+      "completion_tokens": 110,
+      "error": null
+    },
+    {
+      "id": "q07",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Director"
+      ],
+      "answer": "Data not available.",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 18.89,
+      "usd": 0.00045,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 4575,
+      "completion_tokens": 355,
+      "error": null
+    },
+    {
+      "id": "q08",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Chief Legal Counsel",
+        "Chief Financial Officer"
+      ],
+      "answer": "Data not available.",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 9.71,
+      "usd": 0.000768,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 8713,
+      "completion_tokens": 380,
+      "error": null
+    },
+    {
+      "id": "q09",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "President and Chief Executive Officer"
+      ],
+      "answer": "During the reporting period, the following leadership changes occurred at Westwater Resources, Inc.:\n- **Chief Accounting Officer and Controller**: Steven M. Cates was hired on May 10, 2021 [Westwater Resources, Inc..pdf, p.16].\n- **General Counsel and Corporate Secretary**: John W. Lawrence was elected to these positions on February 26, 2022 [Westwater Resources, Inc..pdf, p.17].\n- **Chief Financial Officer and Vice President of Finance**: Steven M. Cates was elected to this position on August 26, 2022, following the retirement of Jeffrey L. Vigil [Westwater Resources, Inc..pdf, p.16, p.17].\n- **President and Chief Executive Officer**: Frank Bakker was appointed on January 16, 2023 [Westwater Resources, Inc..pdf, p.16].\n- **Senior Vice President of Finance and Chief Financial Officer**: Steven M. Cates was promoted to this position on January 16, 2023 [Westwater Resources, Inc..pdf, p.17].\n- **Chief Administrative Officer**: John W. Lawrence was promoted to this position on January 16, 2023 [Westwater Resources, Inc..pdf, p.17].",
+      "citations": [
+        {
+          "document": "Westwater Resources, Inc..pdf",
+          "page": 16
+        },
+        {
+          "document": "Westwater Resources, Inc..pdf",
+          "page": 17
+        },
+        {
+          "document": "Westwater Resources, Inc..pdf, p.16.pdf",
+          "page": 17
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 30.44,
+      "usd": 0.000518,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 3684,
+      "completion_tokens": 803,
+      "error": null
+    },
+    {
+      "id": "q10",
+      "kind": "name",
+      "answerable": true,
+      "expected": "Datalogic",
+      "answer": "Atreca, Inc. had the lowest net income (a net loss of $97,157,000) at the end of the period listed in its annual report [Atreca, Inc..pdf, p.84].",
+      "citations": [
+        {
+          "document": "Atreca, Inc..pdf",
+          "page": 84
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 34.46,
+      "usd": 0.003387,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 40013,
+      "completion_tokens": 1286,
+      "error": null
+    },
+    {
+      "id": "q11",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "The annual report does not explicitly announce a change to the dividend policy. It notes that the Board of Directors declared a quarterly dividend of $0.60 per share on January 26, 2023, following the $0.56 per share paid in 2022, and states that there can be no assurance that the company will continue to pay dividends [HCA Healthcare, Inc..pdf, p.59].",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 59
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 8.05,
+      "usd": 0.000354,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 3240,
+      "completion_tokens": 372,
+      "error": null
+    },
+    {
+      "id": "q12",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "True",
+      "answer": "The annual report for Brave Bison Group plc does not mention any specific mergers or acquisitions; the term \"merger\" is only used in the context of accounting reserves and policies [Brave Bison Group plc.pdf, p.45].",
+      "citations": [
+        {
+          "document": "Brave Bison Group plc.pdf",
+          "page": 45
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 6.13,
+      "usd": 0.000328,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 3318,
+      "completion_tokens": 263,
+      "error": null
+    },
+    {
+      "id": "q13",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "False",
+      "citations": [],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 5.85,
+      "usd": 0.000225,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 2288,
+      "completion_tokens": 178,
+      "error": null
+    },
+    {
+      "id": "q14",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "N/A",
+      "citations": [],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 8.07,
+      "usd": 0.000319,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 3312,
+      "completion_tokens": 238,
+      "error": null
+    },
+    {
+      "id": "q15",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "N/A",
+      "citations": [],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 18.68,
+      "usd": 0.000287,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 2630,
+      "completion_tokens": 300,
+      "error": null
+    },
+    {
+      "id": "q16",
+      "kind": "names",
+      "answerable": false,
+      "expected": null,
+      "answer": "The Albany International Corp. annual report mentions that the company engages in research and development for new technology platforms, products, and product enhancements, and that this innovation has resulted in \"new MC products and/or enhancements\" [Albany International Corp..pdf, p.16]. However, the report does not provide the specific names of any new products launched.",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 16
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 6.42,
+      "usd": 0.000247,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-3.1-flash-lite"
+      ],
+      "prompt_tokens": 2429,
+      "completion_tokens": 212,
+      "error": null
+    }
+  ]
+}

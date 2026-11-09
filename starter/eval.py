@@ -12,8 +12,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import tempfile
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -37,13 +40,23 @@ def ask(question: str, api: str, user: str) -> dict:
         data=json.dumps({"question": question}).encode(),
         headers={"Content-Type": "application/json", "X-User-Id": user},
     )
-    with urllib.request.urlopen(req, timeout=600) as r:
-        body = json.load(r)
+    try:
+        with urllib.request.urlopen(req, timeout=600) as r:
+            body = json.load(r)
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"HTTP {exc.code}: {detail}") from exc
     return {
         "answer": body["answer"],
         "citations": [{"document": c.get("document") or c.get("doc"), "page": c["page"]}
                       for c in body.get("citations", [])],
         "usd": (body.get("usage") or {}).get("usd", 0.0),
+        "provider": (body.get("usage") or {}).get("provider"),
+        "model": (body.get("usage") or {}).get("model"),
+        "providers": (body.get("usage") or {}).get("providers", []),
+        "models": (body.get("usage") or {}).get("models", []),
+        "prompt_tokens": (body.get("usage") or {}).get("prompt_tokens", 0),
+        "completion_tokens": (body.get("usage") or {}).get("completion_tokens", 0),
     }
 
 
@@ -122,15 +135,34 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--label", required=True, help="names the run, e.g. agent or pipeline")
     ap.add_argument("--api", default="http://localhost:8000")
+    ap.add_argument("--resume", action="store_true", help="reuse completed rows from the output file")
+    ap.add_argument("--delay-seconds", type=float, default=0.0, help="pause between provider requests")
     args = ap.parse_args()
+
+    RUNS.mkdir(exist_ok=True)
+    out = RUNS / f"{args.label}.json"
+    existing = {}
+    if args.resume and out.exists():
+        try:
+            existing = {row["id"]: row for row in json.loads(out.read_text()).get("rows", [])}
+        except (OSError, ValueError, KeyError, TypeError):
+            existing = {}
 
     rows = []
     for q in json.loads(GOLDEN.read_text()):
+        if q["id"] in existing and not existing[q["id"]].get("error"):
+            rows.append(existing[q["id"]])
+            print(f"{q['id']}  RESUME")
+            continue
         start = time.perf_counter()
         try:
             got = ask(q["question"], args.api.rstrip("/"), f"eval-{args.label}-{q['id']}")
         except Exception as e:  # a failed question scores zero, the run goes on
-            got = {"answer": f"ERROR: {e}", "citations": []}
+            got = {
+                "answer": f"ERROR: {type(e).__name__}: {e}",
+                "citations": [],
+                "error": f"{type(e).__name__}: {e}",
+            }
         seconds = time.perf_counter() - start
         row = {
             "id": q["id"], "kind": q["kind"], "answerable": q["answerable"],
@@ -139,13 +171,31 @@ def main() -> None:
             "has_evidence": bool(q["evidence"]),
             "evidence_cited": evidence_cited(q, got["citations"]),
             "seconds": round(seconds, 2), "usd": got.get("usd") or 0.0,
+            "provider": got.get("provider"),
+            "model": got.get("model"),
+            "providers": got.get("providers", []),
+            "models": got.get("models", []),
+            "prompt_tokens": got.get("prompt_tokens", 0),
+            "completion_tokens": got.get("completion_tokens", 0),
+            "error": got.get("error"),
         }
         rows.append(row)
         print(f"{q['id']}  {'ok ' if row['correct'] else 'BAD'}  {seconds:5.1f}s  {got['answer'][:70]!r}")
+        payload = {"label": args.label, "scorecard": scorecard(rows), "rows": rows}
+        fd, temp_name = tempfile.mkstemp(prefix=f"{args.label}.", suffix=".json", dir=RUNS)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as temp_file:
+                json.dump(payload, temp_file, indent=2)
+                temp_file.flush()
+                os.fsync(temp_file.fileno())
+            os.replace(temp_name, out)
+        finally:
+            if os.path.exists(temp_name):
+                os.unlink(temp_name)
+        if args.delay_seconds > 0:
+            time.sleep(args.delay_seconds)
 
     card = scorecard(rows)
-    RUNS.mkdir(exist_ok=True)
-    out = RUNS / f"{args.label}.json"
     out.write_text(json.dumps({"label": args.label, "scorecard": card, "rows": rows}, indent=2))
     print()
     for k, v in card.items():

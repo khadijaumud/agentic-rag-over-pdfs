@@ -1,0 +1,478 @@
+{
+  "label": "gemini-stopfix-pipeline",
+  "scorecard": {
+    "answer accuracy": 0.462,
+    "correct refusals on unanswerable": 1.0,
+    "evidence cited": 0.5,
+    "seconds per question": 2.91,
+    "usd for the whole set": 0.0056
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "kind": "number",
+      "answerable": true,
+      "expected": "294000",
+      "answer": "Data not available or not mentioned in the report [HCA Healthcare, Inc..pdf, pp. 5-129].",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 7
+        },
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 10
+        },
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 129
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 1.9,
+      "usd": 0.00047,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 6165,
+      "completion_tokens": 27,
+      "error": null
+    },
+    {
+      "id": "q02",
+      "kind": "number",
+      "answerable": true,
+      "expected": "406100000",
+      "answer": "According to the annual report, the net cash provided by operating activities (cash flow from operations) for Sonic Automotive, Inc. for the year ended December 31, 2022 was $406.1 million [Sonic Automotive, Inc..pdf, p.92].",
+      "citations": [
+        {
+          "document": "Sonic Automotive, Inc..pdf",
+          "page": 92
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 2.86,
+      "usd": 0.000595,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 7694,
+      "completion_tokens": 60,
+      "error": null
+    },
+    {
+      "id": "q03",
+      "kind": "number",
+      "answerable": true,
+      "expected": "31400000",
+      "answer": "Data not available or not mentioned in the report [Albany International Corp..pdf, p.35], [Albany International Corp..pdf, p.39], [Albany International Corp..pdf, p.58], [Albany International Corp..pdf, p.75], [Albany International Corp..pdf, p.76], [Albany International Corp..pdf, p.90].",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 35
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 39
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 58
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 75
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 76
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 90
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 11.85,
+      "usd": 0.000562,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 7141,
+      "completion_tokens": 87,
+      "error": null
+    },
+    {
+      "id": "q04",
+      "kind": "number",
+      "answerable": true,
+      "expected": "2300",
+      "answer": "Data not available or not mentioned in the report [Albany International Corp..pdf, p.16], [Albany International Corp..pdf, p.17].",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 16
+        },
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 17
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 2.86,
+      "usd": 0.000486,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 6346,
+      "completion_tokens": 35,
+      "error": null
+    },
+    {
+      "id": "q05",
+      "kind": "number",
+      "answerable": true,
+      "expected": "9686067000",
+      "answer": "For the year ended December 31, 2022, Total Assets on the summary balance sheet were $9,686,067 thousand ($9,686,067,000) [Origin Bancorp, Inc..pdf, p. 6].",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 6
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 2.76,
+      "usd": 0.000574,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 7396,
+      "completion_tokens": 63,
+      "error": null
+    },
+    {
+      "id": "q06",
+      "kind": "number",
+      "answerable": true,
+      "expected": "39.3",
+      "answer": "The total power generation capacity of RWE AG was 39.3 GW at the end of the year [RWE AG.pdf, p.47].",
+      "citations": [
+        {
+          "document": "RWE AG.pdf",
+          "page": 47
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 2.33,
+      "usd": 4.5e-05,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 464,
+      "completion_tokens": 34,
+      "error": null
+    },
+    {
+      "id": "q07",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Director"
+      ],
+      "answer": "Data not available or not mentioned in the report [Datalogic.pdf, p.56], [Datalogic.pdf, p.82].",
+      "citations": [
+        {
+          "document": "Datalogic.pdf",
+          "page": 56
+        },
+        {
+          "document": "Datalogic.pdf",
+          "page": 82
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 3.26,
+      "usd": 0.000156,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 1951,
+      "completion_tokens": 33,
+      "error": null
+    },
+    {
+      "id": "q08",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Chief Legal Counsel",
+        "Chief Financial Officer"
+      ],
+      "answer": "Data not available or not mentioned in the report [Origin Bancorp, Inc..pdf, p. 5], [Origin Bancorp, Inc..pdf, p. 25], [Origin Bancorp, Inc..pdf, p. 122].",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 5
+        },
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 25
+        },
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 122
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 2.46,
+      "usd": 0.00017,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 2053,
+      "completion_tokens": 54,
+      "error": null
+    },
+    {
+      "id": "q09",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "President and Chief Executive Officer"
+      ],
+      "answer": "Based on the provided report, the leadership and management position changes at Westwater Resources, Inc. during the reporting period were:\n\n* **Chief Financial Officer and Vice President of Finance** / **Senior Vice President of Finance and Chief Financial Officer**: Effective August 26, 2022, a new individual was appointed as Chief Financial Officer and Vice President of Finance, and was subsequently promoted to **Senior Vice President of Finance and Chief Financial Officer** on January 16, 2023 [Westwater Resources, Inc..pdf, p. 15].\n* **General Counsel and Corporate Secretary** / **Chief Administrative Officer**: On February 26, 2022, John W. Lawrence was elected as the Company\u2019s **General Counsel and Corporate Secretary** (having previously served in a contractual capacity), and on January 16, 2023, he was promoted to **Chief Administrative Officer** while retaining his other roles [Westwater Resources, Inc..pdf, p. 15].",
+      "citations": [
+        {
+          "document": "Westwater Resources, Inc..pdf",
+          "page": 15
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 2.67,
+      "usd": 0.00045,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 5139,
+      "completion_tokens": 214,
+      "error": null
+    },
+    {
+      "id": "q10",
+      "kind": "name",
+      "answerable": true,
+      "expected": "Datalogic",
+      "answer": "Data not available. The report does not contain information to answer this question.",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 0.36,
+      "usd": 0.0,
+      "provider": null,
+      "model": null,
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "error": null
+    },
+    {
+      "id": "q11",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "Data not available or not mentioned in the report.",
+      "citations": [
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 80
+        },
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 30
+        },
+        {
+          "document": "HCA Healthcare, Inc..pdf",
+          "page": 29
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 2.01,
+      "usd": 0.000193,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 2534,
+      "completion_tokens": 10,
+      "error": null
+    },
+    {
+      "id": "q12",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "True",
+      "answer": "Yes, Brave Bison Group plc mentioned acquisitions in the annual report, specifically noting the acquisition of Best Response Media and the payment of deferred consideration for the Greenlight acquisition made in 2021 [Brave Bison Group plc.pdf, p. 9, p. 64].",
+      "citations": [
+        {
+          "document": "Brave Bison Group plc.pdf",
+          "page": 9
+        },
+        {
+          "document": "Brave Bison Group plc.pdf",
+          "page": 64
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 2.38,
+      "usd": 0.000517,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 6660,
+      "completion_tokens": 59,
+      "error": null
+    },
+    {
+      "id": "q13",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "Data not available or not mentioned in the report [Seiko Epson Corporation.pdf, p. 2, 48, 67, 150].",
+      "citations": [
+        {
+          "document": "Seiko Epson Corporation.pdf",
+          "page": 2
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 2.19,
+      "usd": 0.000258,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 3305,
+      "completion_tokens": 35,
+      "error": null
+    },
+    {
+      "id": "q14",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "The report does not mention the Gross margin (%) for Armadale Capital Plc [Armadale Capital Plc.pdf, p. 9, 22].",
+      "citations": [
+        {
+          "document": "Armadale Capital Plc.pdf",
+          "page": 9
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 2.33,
+      "usd": 0.000333,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 4321,
+      "completion_tokens": 31,
+      "error": null
+    },
+    {
+      "id": "q15",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "Data not available or not mentioned in the report.",
+      "citations": [
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 30
+        },
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 95
+        },
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 66
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 2.17,
+      "usd": 0.000484,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 6417,
+      "completion_tokens": 10,
+      "error": null
+    },
+    {
+      "id": "q16",
+      "kind": "names",
+      "answerable": false,
+      "expected": null,
+      "answer": "The report does not mention the specific names of new products launched by Albany International Corp. [Albany International Corp..pdf, p. 1, 2, 7, 16, 95, 120, 124].",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 1
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 2.17,
+      "usd": 0.000328,
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "providers": [],
+      "models": [],
+      "prompt_tokens": 4154,
+      "completion_tokens": 54,
+      "error": null
+    }
+  ]
+}

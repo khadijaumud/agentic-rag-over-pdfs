@@ -14,6 +14,7 @@ from src.chunker import chunk_document_pages
 from src.embeddings import embed_texts
 from src.db import save_document, save_chunks, delete_document, get_connection, get_all_chunks
 from src.config import PDF_DIR
+from src import vector_store
 
 def ingest_pdf_file(pdf_path: Path, force: bool = False) -> Dict[str, Any]:
     """Ingest a single PDF file into SQLite and FTS5."""
@@ -50,6 +51,9 @@ def ingest_pdf_file(pdf_path: Path, force: bool = False) -> Dict[str, Any]:
         delete_document(doc_id)
         save_document(doc_id=doc_id, filename=doc_id, page_count=0, file_size=file_size, status="processing")
         save_chunks(chunks)
+        if vector_store.is_available():
+            vector_store.delete_document(doc_id)
+            vector_store.upsert_chunks(chunks)
         save_document(doc_id=doc_id, filename=doc_id, page_count=page_count, file_size=file_size, status="ready")
         
         duration = round(time.time() - t0, 2)
@@ -82,21 +86,26 @@ def rebuild_vector_index_from_db(batch_size: int = 32) -> Dict[str, Any]:
     if not chunks:
         return {"status": "empty", "reindexed_count": 0}
         
-    texts = [c["content"] for c in chunks]
-    embeddings = embed_texts(texts, batch_size=batch_size)
+    missing = [c for c in chunks if c.get("embedding") is None]
+    if missing:
+        embeddings = embed_texts([c["content"] for c in missing], batch_size=batch_size)
+        for c, emb in zip(missing, embeddings):
+            c["embedding"] = emb
+    if vector_store.is_available():
+        count = vector_store.upsert_chunks(chunks, batch_size=batch_size)
+    else:
+        count = 0
     
     conn = get_connection()
     with conn:
-        for c, emb in zip(chunks, embeddings):
-            conn.execute(
-                "UPDATE chunks SET embedding = ? WHERE id = ?",
-                (emb.tobytes(), c["id"])
-            )
+        for c in missing:
+            conn.execute("UPDATE chunks SET embedding = ? WHERE id = ?", (c["embedding"].tobytes(), c["id"]))
     conn.close()
     
     duration = round(time.time() - t0, 2)
     return {
         "status": "success",
         "reindexed_count": len(chunks),
+        "vector_indexed_count": count,
         "seconds": duration
     }

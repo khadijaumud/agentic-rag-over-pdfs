@@ -1,0 +1,459 @@
+{
+  "label": "gemini-latest-agent-grounded",
+  "scorecard": {
+    "answer accuracy": 0.231,
+    "correct refusals on unanswerable": 0.667,
+    "evidence cited": 0.417,
+    "seconds per question": 14.401,
+    "usd for the whole set": 0.0115
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "kind": "number",
+      "answerable": true,
+      "expected": "294000",
+      "answer": "Data not available in HCA Healthcare, Inc..pdf.",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 13.88,
+      "usd": 0.000413,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5400,
+      "completion_tokens": 30,
+      "error": null
+    },
+    {
+      "id": "q02",
+      "kind": "number",
+      "answerable": true,
+      "expected": "406100000",
+      "answer": "Thought: I need to read the rest of page 92 to see the total Cash Provided by Operating Activities for the years 2022, 2021, and 2020. Let's read page 93 as well just in case, or read page 92 directly.\nAction: read_page\nAction Input: {\"document\": \"Sonic Automotive, Inc..pdf\", \"page_number\": 92}",
+      "citations": [
+        {
+          "document": "Sonic Automotive, Inc..pdf",
+          "page": 92
+        },
+        {
+          "document": "Sonic Automotive, Inc..pdf",
+          "page": 71
+        },
+        {
+          "document": "Sonic Automotive, Inc..pdf",
+          "page": 72
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 14.6,
+      "usd": 0.000595,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 7336,
+      "completion_tokens": 150,
+      "error": null
+    },
+    {
+      "id": "q03",
+      "kind": "number",
+      "answerable": true,
+      "expected": "31400000",
+      "answer": "Data not available [Albany International Corp..pdf, p. 16-17].",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 16
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 14.71,
+      "usd": 0.00089,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 10515,
+      "completion_tokens": 340,
+      "error": null
+    },
+    {
+      "id": "q04",
+      "kind": "number",
+      "answerable": true,
+      "expected": "2300",
+      "answer": "N/A [Albany International Corp..pdf]",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 13.18,
+      "usd": 0.000443,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5379,
+      "completion_tokens": 136,
+      "error": null
+    },
+    {
+      "id": "q05",
+      "kind": "number",
+      "answerable": true,
+      "expected": "9686067000",
+      "answer": "For Origin Bancorp, Inc., the Total assets on the consolidated balance sheet were $9,555,750 thousand (or $9,555,750,000) at December 31, 2022, and $7,504,809 thousand (or $7,504,809,000) at December 31, 2021 [Origin Bancorp, Inc..pdf, p. 192].",
+      "citations": [
+        {
+          "document": "Origin Bancorp, Inc..pdf",
+          "page": 192
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 14.5,
+      "usd": 0.001078,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 13485,
+      "completion_tokens": 221,
+      "error": null
+    },
+    {
+      "id": "q06",
+      "kind": "number",
+      "answerable": true,
+      "expected": "39.3",
+      "answer": "The total power generation capacity of RWE AG at the end of the period was 39.3 GW [RWE AG.pdf, p.47].",
+      "citations": [
+        {
+          "document": "RWE AG.pdf",
+          "page": 47
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 11.91,
+      "usd": 0.000542,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5140,
+      "completion_tokens": 522,
+      "error": null
+    },
+    {
+      "id": "q07",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Director"
+      ],
+      "answer": "Data not available",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 13.41,
+      "usd": 0.000466,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5450,
+      "completion_tokens": 189,
+      "error": null
+    },
+    {
+      "id": "q08",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "Chief Legal Counsel",
+        "Chief Financial Officer"
+      ],
+      "answer": "Data not available in the report.",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 13.19,
+      "usd": 0.000481,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5552,
+      "completion_tokens": 219,
+      "error": null
+    },
+    {
+      "id": "q09",
+      "kind": "names",
+      "answerable": true,
+      "expected": [
+        "President and Chief Executive Officer"
+      ],
+      "answer": "Data not available",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 14.49,
+      "usd": 0.000492,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5708,
+      "completion_tokens": 211,
+      "error": null
+    },
+    {
+      "id": "q10",
+      "kind": "name",
+      "answerable": true,
+      "expected": "Datalogic",
+      "answer": "Data not available for RWE AG in EUR (or the reports do not provide a common EUR net income comparison across all specified companies on a uniform basis).",
+      "citations": [
+        {
+          "document": "Atreca, Inc..pdf",
+          "page": 83
+        },
+        {
+          "document": "Atreca, Inc..pdf",
+          "page": 84
+        },
+        {
+          "document": "Atreca, Inc..pdf",
+          "page": 86
+        }
+      ],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 17.04,
+      "usd": 0.002445,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 30428,
+      "completion_tokens": 540,
+      "error": null
+    },
+    {
+      "id": "q11",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "False [HCA Healthcare, Inc..pdf]",
+      "citations": [],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 13.61,
+      "usd": 0.000415,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5237,
+      "completion_tokens": 79,
+      "error": null
+    },
+    {
+      "id": "q12",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "True",
+      "answer": "The report does not mention any mergers or acquisitions [Brave Bison Group plc.pdf].",
+      "citations": [],
+      "correct": false,
+      "has_evidence": true,
+      "evidence_cited": false,
+      "seconds": 12.79,
+      "usd": 0.0004,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5179,
+      "completion_tokens": 36,
+      "error": null
+    },
+    {
+      "id": "q13",
+      "kind": "boolean",
+      "answerable": true,
+      "expected": "False",
+      "answer": "The annual report of Seiko Epson Corporation outlines its dividend policy (which targets a consolidated dividend payout ratio in the range of 40% as a medium-term target) [Seiko Epson Corporation.pdf, p. 67], but it does not announce any changes to its dividend policy. Therefore, False [Seiko Epson Corporation.pdf, p. 67].",
+      "citations": [
+        {
+          "document": "Seiko Epson Corporation.pdf",
+          "page": 67
+        }
+      ],
+      "correct": true,
+      "has_evidence": true,
+      "evidence_cited": true,
+      "seconds": 15.29,
+      "usd": 0.000693,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 8365,
+      "completion_tokens": 218,
+      "error": null
+    },
+    {
+      "id": "q14",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "Data not available for the Gross margin (%) for Armadale Capital Plc in the provided annual report [Armadale Capital Plc.pdf].",
+      "citations": [],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 16.55,
+      "usd": 0.000454,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 5378,
+      "completion_tokens": 167,
+      "error": null
+    },
+    {
+      "id": "q15",
+      "kind": "number",
+      "answerable": false,
+      "expected": null,
+      "answer": "Data not available",
+      "citations": [
+        {
+          "document": "1-800-FLOWERS.COM, INC..pdf",
+          "page": 31
+        }
+      ],
+      "correct": true,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 16.03,
+      "usd": 0.000862,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 10184,
+      "completion_tokens": 328,
+      "error": null
+    },
+    {
+      "id": "q16",
+      "kind": "names",
+      "answerable": false,
+      "expected": null,
+      "answer": "The annual report of Albany International Corp. mentions that research and development activities result in new products and product enhancements across its product lines (such as Machine Clothing and Albany Engineered Composites) [Albany International Corp..pdf, p. 16], but it does not list or name specific new products launched by the company.",
+      "citations": [
+        {
+          "document": "Albany International Corp..pdf",
+          "page": 16
+        }
+      ],
+      "correct": false,
+      "has_evidence": false,
+      "evidence_cited": true,
+      "seconds": 15.23,
+      "usd": 0.000805,
+      "provider": null,
+      "model": null,
+      "providers": [
+        "gemini"
+      ],
+      "models": [
+        "gemini-flash-lite-latest"
+      ],
+      "prompt_tokens": 9018,
+      "completion_tokens": 431,
+      "error": null
+    }
+  ]
+}
