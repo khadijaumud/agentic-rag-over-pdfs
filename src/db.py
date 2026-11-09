@@ -214,7 +214,7 @@ def save_conversation(conv_id: str, title: str, user_id: str = "default_user") -
             INSERT INTO conversations (id, title, user_id)
             VALUES (?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
-                title=excluded.title,
+                title=COALESCE(NULLIF(conversations.title, ''), excluded.title),
                 updated_at=CURRENT_TIMESTAMP
         """, (conv_id, title, user_id))
     conn.close()
@@ -246,10 +246,11 @@ def get_conversation_history(
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT role, content, citations_json, agent_steps_json
+        SELECT id, role, content, citations_json, agent_steps_json,
+               prompt_tokens, completion_tokens, cost_usd
         FROM messages
         WHERE conversation_id = ?
-        ORDER BY created_at ASC
+        ORDER BY created_at ASC, rowid ASC
     """, (conv_id,))
     rows = cur.fetchall()
     conn.close()
@@ -260,6 +261,16 @@ def get_conversation_history(
             d["citations"] = json.loads(d["citations_json"])
         if d.get("agent_steps_json"):
             d["agent_steps"] = json.loads(d["agent_steps_json"])
+        if d["role"] == "assistant":
+            d["usage"] = {
+                "prompt_tokens": d.pop("prompt_tokens", 0) or 0,
+                "completion_tokens": d.pop("completion_tokens", 0) or 0,
+                "usd": d.pop("cost_usd", 0.0) or 0.0,
+            }
+        else:
+            d.pop("prompt_tokens", None)
+            d.pop("completion_tokens", None)
+            d.pop("cost_usd", None)
         res.append(d)
     recent = res[-limit:]
     if max_tokens is None:

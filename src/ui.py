@@ -413,7 +413,7 @@ def stream_question(question: str) -> Tuple[Optional[Dict[str, Any]], Optional[s
             f"{API_URL}/chat/stream",
             params=params,
             headers={"X-User-Id": USER_ID},
-            timeout=180,
+            timeout=(10, 600),
             stream=True,
         ) as response:
             if response.status_code >= 400:
@@ -465,7 +465,8 @@ def stream_question(question: str) -> Tuple[Optional[Dict[str, Any]], Optional[s
         "citations": done.get("citations", []),
         "agent_steps": steps,
         "usage": done.get("usage", {}),
-        "conversation_id": st.session_state.conversation_id,
+        "message_id": done.get("message_id"),
+        "conversation_id": done.get("conversation_id") or st.session_state.conversation_id,
     }, None
 
 
@@ -504,9 +505,12 @@ def submit_question(question: str) -> None:
         "citations": result.get("citations", []),
         "agent_steps": result.get("agent_steps", []),
         "usage": result.get("usage", {}),
+        "message_id": result.get("message_id"),
     })
 
-    st.session_state.conversation_title = question
+    st.session_state.conversation_id = result["conversation_id"]
+    if len([m for m in st.session_state.messages if m.get("role") == "user"]) == 1:
+        st.session_state.conversation_title = question[:50]
 
 for key, default in {
     "messages": [],
@@ -554,36 +558,37 @@ with st.sidebar:
         else:
             st.error(f"Upload failed ({response.status_code}): {response.text}")
 
-    st.markdown(
-    '<div class="section-label">Document library</div>',
-    unsafe_allow_html=True
-)
+    st.markdown('<div class="section-label">Document library</div>', unsafe_allow_html=True)
+    if documents_error:
+        st.error(f"Document library unavailable: {documents_error}")
+    else:
+        render_library(documents)
 
-if documents_error:
-    st.error(f"Document library unavailable: {documents_error}")
-else:
-    render_library(documents)
-
-    ready_documents = [
-        document
-        for document in documents
-        if document.get("status") == "ready"
-    ]
-
-    document_options = [None] + [
-        str(document.get("id") or document.get("filename"))
-        for document in ready_documents
-    ]
-
+    ready_documents = [document for document in documents if document.get("status") == "ready"]
+    document_options = [None] + [str(document.get("id") or document.get("filename")) for document in ready_documents]
+    if st.session_state.document_filter not in document_options:
+        # A previously selected report may have been deleted or is still processing.
+        st.session_state.document_filter = None
     st.selectbox(
         "Search within",
         options=document_options,
-        format_func=lambda value: (
-            "All indexed reports" if value is None else value
-        ),
+        format_func=lambda value: "All indexed reports" if value is None else value,
         key="document_filter",
-        help="Choose one PDF or search across all indexed reports."
+        help="Choose one PDF or search across all indexed reports.",
     )
+
+    st.markdown('<div class="section-label">Research mode</div>', unsafe_allow_html=True)
+    st.radio(
+        "Choose how answers are researched",
+        ["agent", "pipeline"],
+        key="mode",
+        format_func=lambda value: (
+            "Agent · Multi-step — Searches iteratively and gathers evidence before answering."
+            if value == "agent"
+            else "Pipeline · Single pass — Retrieves relevant passages and answers in one pass."
+        ),
+    )
+
     st.markdown('<div class="section-label">Conversation history</div>', unsafe_allow_html=True)
     if conversations_error:
         st.warning("Conversation history is unavailable.")
@@ -596,18 +601,6 @@ else:
                 st.rerun()
     else:
         st.caption("No saved conversations yet.")
-
-    st.markdown('<div class="section-label">Research mode</div>', unsafe_allow_html=True)
-    st.session_state.mode = st.radio(
-        "Choose how answers are researched",
-        ["agent", "pipeline"],
-        index=0 if st.session_state.mode == "agent" else 1,
-        format_func=lambda value: (
-            "Agent · Multi-step — Searches iteratively and gathers evidence before answering."
-            if value == "agent"
-            else "Pipeline · Single pass — Retrieves relevant passages and answers in one pass."
-        ),
-    )
 
     with st.expander("Maintenance", expanded=False):
         left, right = st.columns(2)
