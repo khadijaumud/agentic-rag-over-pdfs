@@ -14,6 +14,7 @@ Endpoints:
 import uuid
 import json
 import asyncio
+import logging
 logger = logging.getLogger(__name__)
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -190,19 +191,15 @@ async def chat_stream(
         except HTTPException as exc:
             yield f"data: {json.dumps({'event': 'error', 'status': exc.status_code, 'detail': exc.detail})}\n\n"
             return
-        except Exception:
-                logger.exception("Chat service failed during streaming.")
-
-                yield (
-                    f"data: {json.dumps({
-                        'event': 'error',
-                        'status': 500,
-                        'detail': 'Chat service failed. Check backend logs.'
-                    })}\n\n"
-                )
-
-                return
         
+        except Exception:
+            error_payload = {
+                "event": "error",
+                "status": 500,
+                "detail": "Chat service failed. Check backend logs."
+            }
+            yield f"data: {json.dumps(error_payload)}\n\n"
+            return
         # Stream agent steps
         for step in resp_data.get("agent_steps", []):
             yield f"data: {json.dumps({'event': 'step', 'step': step})}\n\n"
