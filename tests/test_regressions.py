@@ -2,6 +2,7 @@
 
 import ast
 import json
+import typing
 from pathlib import Path
 from unittest.mock import patch
 
@@ -70,6 +71,50 @@ def test_sidebar_contains_library_filter_mode_and_history():
     assert "load_conversation" in calls
 
 
+def test_library_selects_ready_pdf_without_rendering_a_link():
+    source = UI_PATH.read_text(encoding="utf-8")
+    assert "on_click=select_document" in source
+    assert 'st.session_state.document_selector = document_id' in source
+    assert 'args=(filename,)' in source
+    assert "target=\"_blank\"" not in source
+
+
+def test_document_filter_uses_filename_contract_and_has_clear_control():
+    source = UI_PATH.read_text(encoding="utf-8")
+    assert 'document_options = [None] + [str(document["filename"]) for document in ready_documents]' in source
+    assert 'key="document_selector"' in source
+    assert "clear_document_filter" in source
+    assert "on_click=clear_document_filter" in source
+    assert '"document_filter": st.session_state.document_filter' in source
+
+
+def test_done_answer_is_rendered_and_preserved_after_stream():
+    source = UI_PATH.read_text(encoding="utf-8")
+    assert 'final_answer = str(done.get("answer") or "".join(answer_parts)).strip()' in source
+    assert "placeholder.markdown(final_answer)" in source
+    assert 'if completed_answer:' in source
+    assert '"answer": completed_answer' in source
+
+
+def test_sse_parser_handles_event_boundaries_and_multiline_data():
+    tree = _ui_tree()
+    parser_node = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "parse_sse_events")
+    namespace = {"json": json, **vars(typing)}
+    exec(compile(ast.Module(body=[parser_node], type_ignores=[]), str(UI_PATH), "exec"), namespace)
+    parse_sse_events = namespace["parse_sse_events"]
+    events = list(parse_sse_events([
+        b'data: {"event":"token","token":"hello"}\r\n',
+        b"\r\n",
+        'data: {"event":"done",\n',
+        'data: "answer":"hello"}\n',
+        "\n",
+    ]))
+    assert events == [
+        {"event": "token", "token": "hello"},
+        {"event": "done", "answer": "hello"},
+    ]
+
+
 def test_sidebar_widgets_bind_session_state_keys():
     sidebar = _sidebar_body()
     keys = {}
@@ -78,7 +123,7 @@ def test_sidebar_widgets_bind_session_state_keys():
             for kw in call.keywords:
                 if kw.arg == "key":
                     keys[ast.unparse(call.func)] = ast.literal_eval(kw.value)
-    assert keys == {"st.selectbox": "document_filter", "st.radio": "mode"}
+    assert keys == {"st.selectbox": "document_selector", "st.radio": "mode"}
 
 
 def test_dashboard_does_not_render_sidebar_controls():
@@ -155,6 +200,7 @@ def test_stream_emits_steps_tokens_and_done_with_ids():
     done = events[-1]
     assert done["conversation_id"] == "conv_stream_regression"
     assert done["message_id"].startswith("msg_")
+    assert done["answer"] == MOCK_PIPELINE["text"]
     assert done["citations"] == [{"document": "RWE AG.pdf", "page": 47}]
     answer = "".join(event["token"] for event in events if event["event"] == "token").strip()
     assert answer == MOCK_PIPELINE["text"]

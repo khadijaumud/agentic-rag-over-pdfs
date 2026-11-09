@@ -235,6 +235,7 @@ async def chat_stream(
             "conversation_id": resp_data["conversation_id"],
             "message_id": resp_data["message_id"],
             "mode": resp_data["mode"],
+            "answer": resp_data["answer"],
             "citations": resp_data["citations"],
             "usage": resp_data["usage"],
         }

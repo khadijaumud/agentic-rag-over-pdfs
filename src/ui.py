@@ -5,7 +5,7 @@ from __future__ import annotations
 import html
 import json
 import time
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple
 from urllib.parse import quote
 
 import requests
@@ -372,29 +372,114 @@ def render_selected_source() -> None:
                 st.code(text, language="text")
 
 
+def select_document(document_id: str) -> None:
+    st.session_state.document_filter = document_id
+    st.session_state.document_selector = document_id
+
+
+def clear_document_filter() -> None:
+    st.session_state.document_filter = None
+    st.session_state.document_selector = None
+
+
 def render_library(documents: List[Dict[str, Any]]) -> None:
-    ready = sum(document.get("status") == "ready" for document in documents)
-    st.markdown(f'<div class="library-summary"><span>Document library</span><strong>{ready}/{len(documents)} ready</strong></div>', unsafe_allow_html=True)
+    ready_documents = [
+        document for document in documents
+        if document.get("status") == "ready"
+    ]
+
+    ready_filenames = [
+        str(document.get("filename", "Untitled"))
+        for document in ready_documents
+    ]
+
+    # Clear selection if the selected document is no longer available.
+    if st.session_state.document_filter not in [None] + ready_filenames:
+        st.session_state.document_filter = None
+
+    st.markdown(
+        f'<div class="library-summary"><span>Document library</span>'
+        f'<strong>{len(ready_documents)}/{len(documents)} ready</strong></div>',
+        unsafe_allow_html=True,
+    )
+
     if not documents:
         st.info("No reports are indexed yet. Upload a PDF to begin.")
         return
+
+    # Search across all indexed documents.
+    all_selected = st.session_state.document_filter is None
+
+    st.button(
+        "All indexed reports",
+        key="select-all-documents",
+        type="primary" if all_selected else "secondary",
+        use_container_width=True,
+        on_click=clear_document_filter,
+        help="Search across all indexed reports.",
+    )
+
+    st.caption("SELECT A PDF")
+
     for document in documents:
         status = str(document.get("status", "unknown"))
-        status_class = f"status-{status}" if status in {"ready", "processing", "pending", "failed"} else ""
         filename = str(document.get("filename", "Untitled"))
-        name_html = html.escape(filename)
+        page_count = document.get("page_count", "—")
+
         if status == "ready":
-            document_id = str(document.get("id") or filename)
-            href = f"{API_URL}/documents/{quote(document_id, safe='')}/file"
-            name_html = (
-                f'<a class="doc-link" href="{html.escape(href, quote=True)}" '
-                f'target="_blank" rel="noopener" title="Open {html.escape(filename, quote=True)}">{name_html}</a>'
+            is_selected = st.session_state.document_filter == filename
+
+            st.button(
+                f"{'✓ ' if is_selected else ''}{filename}",
+                key=f"document-{filename}",
+                type="primary" if is_selected else "secondary",
+                use_container_width=True,
+                on_click=select_document,
+                args=(filename,),
+                help="Select this PDF for your questions.",
             )
-        st.markdown(
-            f'<div class="doc-item"><div class="doc-name">{name_html}</div>'
-            f'<div class="doc-meta"><span class="{status_class}">● {html.escape(status.title())}</span> · {document.get("page_count", "—")} pages</div></div>',
-            unsafe_allow_html=True,
-        )
+
+            st.caption(f"Ready · {page_count} pages")
+
+        else:
+            st.markdown(
+                f'<div class="doc-item">'
+                f'<div class="doc-name">{html.escape(filename)}</div>'
+                f'<div class="doc-meta">'
+                f'{html.escape(status.title())} · {page_count} pages'
+                f'</div></div>',
+                unsafe_allow_html=True,
+            )
+
+
+def parse_sse_events(lines: Iterable[Any]) -> Iterator[Dict[str, Any]]:
+    data_lines: List[str] = []
+
+    def emit() -> Iterator[Dict[str, Any]]:
+        if not data_lines:
+            return
+        payload = "\n".join(data_lines)
+        try:
+            event = json.loads(payload)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid chat stream event: {exc.msg}") from exc
+        if not isinstance(event, dict):
+            raise ValueError("Invalid chat stream event: expected an object.")
+        yield event
+
+    for raw_line in lines:
+        if isinstance(raw_line, bytes):
+            line = raw_line.decode("utf-8", errors="replace")
+        else:
+            line = str(raw_line)
+        line = line.rstrip("\r\n")
+        if not line:
+            yield from emit()
+            data_lines.clear()
+            continue
+        if line.startswith("data:"):
+            data_lines.append(line[5:].lstrip(" "))
+    yield from emit()
 
 
 def stream_question(question: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
@@ -421,19 +506,7 @@ def stream_question(question: str) -> Tuple[Optional[Dict[str, Any]], Optional[s
 
             placeholder = st.empty()
 
-            for raw_line in response.iter_lines():
-                if not raw_line:
-                    continue
-
-                if isinstance(raw_line, bytes):
-                    line = raw_line.decode("utf-8", errors="replace")
-                else:
-                    line = raw_line
-
-                if not line.startswith("data: "):
-                    continue
-
-                event = json.loads(line[6:])
+            for event in parse_sse_events(response.iter_lines()):
 
                 if event.get("event") == "step":
                     steps.append(event.get("step", {}))
@@ -448,14 +521,36 @@ def stream_question(question: str) -> Tuple[Optional[Dict[str, Any]], Optional[s
                 elif event.get("event") == "error":
                     return None, event.get("detail", "Chat service failed.")
 
-            placeholder.empty()
+            final_answer = str(done.get("answer") or "".join(answer_parts)).strip()
+            if final_answer:
+                placeholder.markdown(final_answer)
 
-    except (requests.RequestException, json.JSONDecodeError, UnicodeDecodeError) as exc:
+    except (requests.RequestException, ValueError, UnicodeDecodeError) as exc:
+        completed_answer = str(done.get("answer") or "".join(answer_parts)).strip()
+        if completed_answer:
+            return {
+                "answer": completed_answer,
+                "citations": done.get("citations", []),
+                "agent_steps": steps,
+                "usage": done.get("usage", {}),
+                "message_id": done.get("message_id"),
+                "conversation_id": done.get("conversation_id") or st.session_state.conversation_id,
+            }, None
         return None, str(exc)
     except Exception as exc:
+        completed_answer = str(done.get("answer") or "".join(answer_parts)).strip()
+        if completed_answer:
+            return {
+                "answer": completed_answer,
+                "citations": done.get("citations", []),
+                "agent_steps": steps,
+                "usage": done.get("usage", {}),
+                "message_id": done.get("message_id"),
+                "conversation_id": done.get("conversation_id") or st.session_state.conversation_id,
+            }, None
         return None, f"Unexpected streaming error: {type(exc).__name__}: {exc}"
 
-    answer = "".join(answer_parts).strip()
+    answer = str(done.get("answer") or "".join(answer_parts)).strip()
 
     if not answer:
         return None, "The chat service returned an empty answer."
@@ -564,18 +659,7 @@ with st.sidebar:
     else:
         render_library(documents)
 
-    ready_documents = [document for document in documents if document.get("status") == "ready"]
-    document_options = [None] + [str(document.get("id") or document.get("filename")) for document in ready_documents]
-    if st.session_state.document_filter not in document_options:
-        # A previously selected report may have been deleted or is still processing.
-        st.session_state.document_filter = None
-    st.selectbox(
-        "Search within",
-        options=document_options,
-        format_func=lambda value: "All indexed reports" if value is None else value,
-        key="document_filter",
-        help="Choose one PDF or search across all indexed reports.",
-    )
+
 
     st.markdown('<div class="section-label">Research mode</div>', unsafe_allow_html=True)
     st.radio(
@@ -618,7 +702,7 @@ with st.sidebar:
 st.markdown(
     f'<div class="workspace-head"><div><div class="eyebrow">Research workspace</div>'
     f'<div class="workspace-title">{html.escape(st.session_state.conversation_title)}</div></div>'
-    f'<div class="health {"offline" if health_error else ""}">{"● Service unavailable" if health_error else "● Service ready"}</div></div>',
+    f'<div class="health {"offline" if health_error else ""}">{"Service unavailable" if health_error else "Service ready"}</div></div>',
     unsafe_allow_html=True,
 )
 
@@ -656,7 +740,10 @@ with chat_column:
                     st.warning("This response did not complete successfully.")
                 render_citations(message.get("citations", []), f"message-{index}")
 
-    prompt = st.chat_input("Ask a question about the reports…", disabled=st.session_state.busy or bool(health_error))
+    prompt = st.chat_input(
+    "Ask a question about the reports...",
+    disabled=st.session_state.busy,
+)
     if prompt:
         submit_question(prompt)
         st.rerun()
