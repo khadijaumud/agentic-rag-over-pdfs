@@ -228,7 +228,28 @@ def rerank_passages(
         return results
     except Exception as e:
         print(f"[Reranker Error] {e}. Falling back to RRF order.")
-        return candidates[:top_n]
+
+        best_rrf = max(
+            (
+                float(candidate.get("rrf_score", 0.0))
+                for candidate in candidates
+            ),
+            default=1.0
+        )
+
+        results = []
+
+        for candidate in candidates[:top_n]:
+            item = dict(candidate)
+
+            item["rerank_score"] = (
+                float(item.get("rrf_score", 0.0))
+                / max(best_rrf, 1e-12)
+            )
+
+        results.append(item)
+
+    return results
 
 def hybrid_search(
     query: str,

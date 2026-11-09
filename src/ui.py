@@ -399,10 +399,11 @@ def render_library(documents: List[Dict[str, Any]]) -> None:
 
 def stream_question(question: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
     params = {
-        "question": question,
-        "conversation_id": st.session_state.conversation_id,
-        "mode": st.session_state.mode,
-    }
+    "question": question,
+    "conversation_id": st.session_state.conversation_id,
+    "mode": st.session_state.mode,
+    "document_filter": st.session_state.document_filter,
+}
     answer_parts: List[str] = []
     steps: List[Dict[str, Any]] = []
     done: Dict[str, Any] = {}
@@ -508,8 +509,14 @@ def submit_question(question: str) -> None:
     st.session_state.conversation_title = question
 
 for key, default in {
-    "messages": [], "conversation_id": f"conv_{int(time.time())}", "conversation_title": "New research thread",
-    "mode": "agent", "selected_source": None, "connection_error": None, "busy": False,
+    "messages": [],
+    "conversation_id": f"conv_{int(time.time())}",
+    "conversation_title": "New research thread",
+    "mode": "agent",
+    "selected_source": None,
+    "connection_error": None,
+    "busy": False,
+    "document_filter": None,
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
@@ -547,12 +554,36 @@ with st.sidebar:
         else:
             st.error(f"Upload failed ({response.status_code}): {response.text}")
 
-    st.markdown('<div class="section-label">Document library</div>', unsafe_allow_html=True)
-    if documents_error:
-        st.error(f"Document library unavailable: {documents_error}")
-    else:
-        render_library(documents)
+    st.markdown(
+    '<div class="section-label">Document library</div>',
+    unsafe_allow_html=True
+)
 
+if documents_error:
+    st.error(f"Document library unavailable: {documents_error}")
+else:
+    render_library(documents)
+
+    ready_documents = [
+        document
+        for document in documents
+        if document.get("status") == "ready"
+    ]
+
+    document_options = [None] + [
+        str(document.get("id") or document.get("filename"))
+        for document in ready_documents
+    ]
+
+    st.selectbox(
+        "Search within",
+        options=document_options,
+        format_func=lambda value: (
+            "All indexed reports" if value is None else value
+        ),
+        key="document_filter",
+        help="Choose one PDF or search across all indexed reports."
+    )
     st.markdown('<div class="section-label">Conversation history</div>', unsafe_allow_html=True)
     if conversations_error:
         st.warning("Conversation history is unavailable.")

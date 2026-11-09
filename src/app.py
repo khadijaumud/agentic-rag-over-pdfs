@@ -14,6 +14,7 @@ Endpoints:
 import uuid
 import json
 import asyncio
+logger = logging.getLogger(__name__)
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Header, HTTPException, Query
@@ -102,9 +103,15 @@ async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="defa
     # Dispatch between multi-step agent and single-pass baseline
     try:
         if mode == "pipeline":
-            result = run_single_pass_pipeline(req.question, document_filter=req.document_filter)
+            result = run_single_pass_pipeline(
+        req.question,
+        document_filter=req.document_filter)
         else:
-            result = run_agent(req.question, conversation_history=history)
+            result = run_agent(
+        req.question,
+        conversation_history=history,
+        document_filter=req.document_filter
+    )
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
         
@@ -157,7 +164,11 @@ async def chat_stream(
     question: str,
     conversation_id: Optional[str] = None,
     mode: str = "agent",
-    x_user_id: Optional[str] = Header(default="default_user", alias="X-User-Id")
+    document_filter: Optional[str] = None,
+    x_user_id: Optional[str] = Header(
+        default="default_user",
+        alias="X-User-Id"
+    )
 ):
     """Server-Sent Events (SSE) streaming chat endpoint."""
     async def event_generator():
@@ -166,7 +177,12 @@ async def chat_stream(
         
         # Run the synchronous work behind the async endpoint in a worker thread.
         loop = asyncio.get_event_loop()
-        req_obj = ChatRequest(question=question, conversation_id=conversation_id, mode=mode)
+        req_obj = ChatRequest(
+    question=question,
+    conversation_id=conversation_id,
+    mode=mode,
+    document_filter=document_filter
+)
         try:
             resp_data = await loop.run_in_executor(
                 None, lambda: asyncio.run(chat(req_obj, x_user_id))
@@ -174,9 +190,18 @@ async def chat_stream(
         except HTTPException as exc:
             yield f"data: {json.dumps({'event': 'error', 'status': exc.status_code, 'detail': exc.detail})}\n\n"
             return
-        except Exception as exc:
-            yield f"data: {json.dumps({'event': 'error', 'status': 500, 'detail': 'Chat service failed.'})}\n\n"
-            return
+        except Exception:
+                logger.exception("Chat service failed during streaming.")
+
+                yield (
+                    f"data: {json.dumps({
+                        'event': 'error',
+                        'status': 500,
+                        'detail': 'Chat service failed. Check backend logs.'
+                    })}\n\n"
+                )
+
+                return
         
         # Stream agent steps
         for step in resp_data.get("agent_steps", []):

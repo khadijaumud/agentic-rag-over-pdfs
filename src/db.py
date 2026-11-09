@@ -213,7 +213,9 @@ def save_conversation(conv_id: str, title: str, user_id: str = "default_user") -
         conn.execute("""
             INSERT INTO conversations (id, title, user_id)
             VALUES (?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET updated_at=CURRENT_TIMESTAMP
+            ON CONFLICT(id) DO UPDATE SET
+                title=excluded.title,
+                updated_at=CURRENT_TIMESTAMP
         """, (conv_id, title, user_id))
     conn.close()
 

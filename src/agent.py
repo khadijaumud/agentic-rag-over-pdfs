@@ -193,7 +193,8 @@ def parse_agent_action(llm_output: str) -> Tuple[Optional[str], Optional[Dict[st
 def run_agent(
     question: str,
     max_iterations: int = MAX_AGENT_ITERATIONS,
-    conversation_history: Optional[List[Dict[str, Any]]] = None
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
+    document_filter: Optional[str] = None
 ) -> Dict[str, Any]:
     """Execute the multi-step Agentic RAG loop."""
     steps = []
@@ -213,7 +214,18 @@ def run_agent(
         messages.extend(conversation_history)
         
     # Initial user prompt
-    messages.append({"role": "user", "content": f"Question: {question}"})
+    user_content = f"Question: {question}"
+
+    if document_filter:
+        user_content += (
+        f"\nSelected document: {document_filter}."
+        "\nYou must search and read only this document."
+    )
+
+    messages.append({
+    "role": "user",
+    "content": user_content
+})
     
     final_answer = None
     
@@ -250,7 +262,11 @@ def run_agent(
         if llm_resp.get("provider") == "none":
             # Keep the application useful and honest without silently inventing an
             # answer when no remote provider is configured.
-            results = hybrid_search(question, top_k=5)
+            results = hybrid_search(
+    question,
+    document_filter=document_filter,
+    top_k=5
+)
             if results:
                 final_answer = (
                     "The configured LLM is unavailable. Relevant report passages:\n\n"
@@ -343,20 +359,63 @@ def run_agent(
                 observation = tool_fn()
             elif action == "search_documents":
                 q = action_args.get("query", question)
-                doc_filt = action_args.get("document_filter") or action_args.get("document")
-                search_results = _search_documents(q, document_filter=doc_filt)
+
+                doc_filt = (
+                    document_filter
+                    or action_args.get("document_filter")
+                    or action_args.get("document")
+                )
+
+                search_results = _search_documents(
+                    q,
+                    document_filter=doc_filt
+                )
+
                 all_retrieved_chunks.extend(search_results)
                 search_count += 1
-                observation = _format_search_results(search_results, q)
+
+                observation = _format_search_results(
+                    search_results,
+                    q
+    )
             elif action == "read_page":
-                doc = action_args.get("document", "")
-                page = int(action_args.get("page_number", action_args.get("page", 1)))
-                normalized_doc = doc if str(doc).lower().endswith(".pdf") else f"{doc}.pdf"
-                page_chunks = get_page_chunks(normalized_doc, page)
-                all_retrieved_chunks.extend(page_chunks)
-                if page_chunks:
-                    read_page_count += 1
-                observation = tool_fn(document=doc, page_number=page)
+                doc = str(action_args.get("document", "")).strip()
+
+                page = int(
+                    action_args.get(
+                        "page_number",
+                        action_args.get("page", 1)
+                    )
+                )
+
+                normalized_doc = (
+                    doc if doc.lower().endswith(".pdf")
+                    else f"{doc}.pdf"
+                )
+
+                if (
+                    document_filter
+                    and normalized_doc.casefold() != document_filter.casefold()
+                ):
+                    observation = (
+                        f"[Filter] You must read only {document_filter}. "
+                        f"Reading {normalized_doc} is not allowed."
+                    )
+                else:
+                    page_chunks = get_page_chunks(
+                        normalized_doc,
+                        page
+                    )
+
+                    all_retrieved_chunks.extend(page_chunks)
+
+                    if page_chunks:
+                        read_page_count += 1
+
+                    observation = tool_fn(
+                        document=doc,
+                        page_number=page
+                    )
             elif action == "calculate":
                 expr = action_args.get("expression", action_args.get("expr", ""))
                 observation = tool_fn(expression=expr)
