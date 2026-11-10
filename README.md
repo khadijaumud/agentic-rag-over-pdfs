@@ -65,6 +65,8 @@ Docker was verified from a running Docker Desktop daemon with
 and an upload/restart persistence test. The upload remained ready after
 restart, and the original 14-document corpus remained available.
 
+The first docker compose up --build takes about 10 to 15 minutes because sentence-transformers downloads PyTorch and its CUDA libraries (several GB). Later builds use the Docker cache. After the build, the container rebuilds the vector index from the database before the API becomes reachable at http://localhost:8000.
+
 ## Agent and safety behavior
 
 Each agent step is recorded in the response and persisted with the assistant
