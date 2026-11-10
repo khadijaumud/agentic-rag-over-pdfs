@@ -16,5 +16,4 @@ until curl -sf http://qdrant:6333/healthz >/dev/null; do
 done
 python -c "from src.ingestion import rebuild_vector_index_from_db; print(rebuild_vector_index_from_db())"
 
-python -m uvicorn src.app:app --host 0.0.0.0 --port 8000 &
-exec streamlit run src/ui.py --server.port 8501 --server.address 0.0.0.0
+exec python -m uvicorn src.app:app --host 0.0.0.0 --port 8000

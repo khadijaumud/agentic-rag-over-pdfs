@@ -1,4 +1,4 @@
-"""Regression tests for the sidebar layout and the question-answer flow."""
+"""Regression tests for the web UI routes and the question-answer flow."""
 
 import ast
 import json
@@ -13,8 +13,6 @@ from src.db import init_db, save_document, save_chunks, get_conversation_history
 from src.retrieval import rerank_passages
 
 client = TestClient(app)
-
-UI_PATH = Path(__file__).resolve().parents[1] / "src" / "ui.py"
 
 MOCK_PIPELINE = {
     "text": "Capacity was 39.3 GW [RWE AG.pdf, p.47].",
@@ -38,102 +36,17 @@ def _seed() -> None:
     ])
 
 
-def _ui_tree():
-    return ast.parse(UI_PATH.read_text(encoding="utf-8"))
+def test_web_ui_page_and_static_files_are_served():
+    page = client.get("/")
+    assert page.status_code == 200
+    assert "text/html" in page.headers["content-type"]
+    assert "Research Desk" in page.text
+    for asset in ("styles.css", "app.js"):
+        assert client.get(f"/static/{asset}").status_code == 200
 
 
-def _sidebar_body(tree=None):
-    tree = tree or _ui_tree()
-    for node in tree.body:
-        if isinstance(node, ast.With):
-            for item in node.items:
-                expr = item.context_expr
-                if isinstance(expr, ast.Attribute) and expr.attr == "sidebar":
-                    return node
-    raise AssertionError("src/ui.py has no top-level `with st.sidebar:` block")
-
-
-def _calls_in(node):
-    return [
-        ast.unparse(call.func)
-        for call in ast.walk(node)
-        if isinstance(call, ast.Call)
-    ]
-
-
-def test_sidebar_contains_library_filter_mode_and_history():
-    sidebar = _sidebar_body()
-    calls = _calls_in(sidebar)
-    assert "render_library" in calls
-    assert "st.selectbox" in calls
-    assert "st.radio" in calls
-    assert "st.file_uploader" in calls
-    assert "load_conversation" in calls
-
-
-def test_library_selects_ready_pdf_without_rendering_a_link():
-    source = UI_PATH.read_text(encoding="utf-8")
-    assert "on_click=select_document" in source
-    assert 'st.session_state.document_selector = document_id' in source
-    assert 'args=(filename,)' in source
-    assert "target=\"_blank\"" not in source
-
-
-def test_document_filter_uses_filename_contract_and_has_clear_control():
-    source = UI_PATH.read_text(encoding="utf-8")
-    assert 'document_options = [None] + [str(document["filename"]) for document in ready_documents]' in source
-    assert 'key="document_selector"' in source
-    assert "clear_document_filter" in source
-    assert "on_click=clear_document_filter" in source
-    assert '"document_filter": st.session_state.document_filter' in source
-
-
-def test_done_answer_is_rendered_and_preserved_after_stream():
-    source = UI_PATH.read_text(encoding="utf-8")
-    assert 'final_answer = str(done.get("answer") or "".join(answer_parts)).strip()' in source
-    assert "placeholder.markdown(final_answer)" in source
-    assert 'if completed_answer:' in source
-    assert '"answer": completed_answer' in source
-
-
-def test_sse_parser_handles_event_boundaries_and_multiline_data():
-    tree = _ui_tree()
-    parser_node = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == "parse_sse_events")
-    namespace = {"json": json, **vars(typing)}
-    exec(compile(ast.Module(body=[parser_node], type_ignores=[]), str(UI_PATH), "exec"), namespace)
-    parse_sse_events = namespace["parse_sse_events"]
-    events = list(parse_sse_events([
-        b'data: {"event":"token","token":"hello"}\r\n',
-        b"\r\n",
-        'data: {"event":"done",\n',
-        'data: "answer":"hello"}\n',
-        "\n",
-    ]))
-    assert events == [
-        {"event": "token", "token": "hello"},
-        {"event": "done", "answer": "hello"},
-    ]
-
-
-def test_sidebar_widgets_bind_session_state_keys():
-    sidebar = _sidebar_body()
-    keys = {}
-    for call in ast.walk(sidebar):
-        if isinstance(call, ast.Call) and ast.unparse(call.func) in ("st.selectbox", "st.radio"):
-            for kw in call.keywords:
-                if kw.arg == "key":
-                    keys[ast.unparse(call.func)] = ast.literal_eval(kw.value)
-    assert keys == {"st.selectbox": "document_selector", "st.radio": "mode"}
-
-
-def test_dashboard_does_not_render_sidebar_controls():
-    tree = _ui_tree()
-    sidebar = _sidebar_body(tree)
-    outside = [node for node in tree.body if node is not sidebar and not isinstance(node, ast.FunctionDef)]
-    calls = [c for node in outside for c in _calls_in(node)]
-    assert "st.selectbox" not in calls
-    assert "st.radio" not in calls
-    assert "render_library" not in calls
+def test_conversation_messages_endpoint_unknown_id_is_404():
+    assert client.get("/conversations/does-not-exist/messages").status_code == 404
 
 
 def test_rerank_fallback_keeps_every_candidate():

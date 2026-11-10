@@ -8,7 +8,7 @@ filename and a one-based page number.
 ## Architecture
 
 ```text
-Browser (Streamlit) ──HTTP/SSE──> FastAPI
+Browser (web UI)   ──HTTP/SSE──> FastAPI
                                   │
               ┌───────────────────┼───────────────────┐
               │                   │                   │
@@ -38,13 +38,8 @@ python scripts/ingest_starter_corpus.py
 python -m uvicorn src.app:app --reload --port 8000
 ```
 
-In another terminal:
-
-```powershell
-streamlit run src/ui.py
-```
-
-The API is at `http://localhost:8000`, the UI at `http://localhost:8501`, and
+The web UI and the API are both served by FastAPI at `http://localhost:8000`
+(if `localhost` does not respond on Windows, use `http://127.0.0.1:8000`), and
 `GET /health` is the readiness check. A valid LLM key (or reachable Ollama
 fallback) is required for conversational answers; missing or unreachable
 providers return an explicit API error rather than an invented answer.
@@ -57,7 +52,7 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
-Compose exposes the API on port 8000, Streamlit on port 8501, and Qdrant on
+Compose exposes the API and the web UI on port 8000 and Qdrant on
 port 6333. SQLite, uploaded PDFs, runtime data, and Qdrant vectors use named
 volumes. On first startup, the
 entrypoint seeds the named volume from the bundled starter index and reports
@@ -86,11 +81,11 @@ chunks and FTS5. `/documents/reindex` rebuilds embeddings from SQLite.
 `/chat/stream` emits SSE events for agent steps, answer tokens, citations, and
 usage.
 
-Streamlit's standard `st.file_uploader` buffers the selected file before the
-frontend can issue the multipart request, so it does not expose trustworthy
-byte-level upload progress. The UI therefore reports the selected file and
-the backend's real `pending`/`processing`/`ready`/`failed` status rather than
-displaying fabricated percentage progress.
+The web UI (`frontend/`: plain HTML, CSS and JavaScript served by FastAPI, no
+build step) uploads with `XMLHttpRequest`, so the progress bar shows real
+transferred bytes. After the upload it polls `/documents` and shows the
+backend's `pending`/`processing`/`ready`/`failed` status. It replaced an earlier
+Streamlit UI, whose `st.file_uploader` could not report byte-level progress.
 
 ## Evaluation
 
@@ -156,3 +151,9 @@ configurable local fallback (`FALLBACK_PROVIDER=ollama`) but requires a
 separately running Ollama server and pulled model. Authentication is
 intentionally limited to the required user-id header. OCR for scanned pages,
 structured table querying, and a separate task queue are not implemented.
+
+`/chat/stream` runs the agent to completion and then streams the finished answer
+word by word, so tokens are not produced while the model is still thinking. The
+UI shows an elapsed-time indicator meanwhile, and agent answers often take
+15 to 40 seconds. The web UI has no automated browser tests; it was checked
+manually against the running API.

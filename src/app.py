@@ -21,6 +21,7 @@ from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from urllib.parse import quote
 from pydantic import BaseModel
 
@@ -56,6 +57,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Web frontend -----------------------------------------------------------
+# The browser UI lives in ./frontend (index.html, styles.css, app.js).
+# "/" serves the page and "/static/*" serves its CSS and JS from the same origin,
+# so no CORS setup or extra server is needed.
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+
+if FRONTEND_DIR.is_dir():
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+    @app.get("/", include_in_schema=False)
+    async def web_ui():
+        """Serve the Research Desk web interface."""
+        return FileResponse(FRONTEND_DIR / "index.html", headers={"Cache-Control": "no-cache"})
 
 # Ensure database schema is initialized on import
 init_db()
@@ -349,6 +364,45 @@ async def get_conversation(conv_id: str):
     """Get full message history for a conversation."""
     history = get_conversation_history(conv_id, limit=50)
     return {"conversation_id": conv_id, "messages": history}
+
+@app.get("/conversations/{conv_id}/messages")
+async def get_conversation_messages(conv_id: str):
+    """Full thread for the web UI: message ids, citations, agent steps and token usage."""
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM conversations WHERE id = ?", (conv_id,))
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail="Conversation not found.")
+        cur.execute(
+            """
+            SELECT id, role, content, citations_json, agent_steps_json,
+                   prompt_tokens, completion_tokens, cost_usd, created_at
+            FROM messages
+            WHERE conversation_id = ?
+            ORDER BY created_at ASC, rowid ASC
+            """,
+            (conv_id,),
+        )
+        rows = cur.fetchall()
+    finally:
+        conn.close()
+    messages = []
+    for r in rows:
+        messages.append({
+            "id": r["id"],
+            "role": r["role"],
+            "content": r["content"],
+            "citations": json.loads(r["citations_json"]) if r["citations_json"] else [],
+            "agent_steps": json.loads(r["agent_steps_json"]) if r["agent_steps_json"] else [],
+            "usage": {
+                "prompt_tokens": r["prompt_tokens"] or 0,
+                "completion_tokens": r["completion_tokens"] or 0,
+                "usd": r["cost_usd"] or 0.0,
+            } if r["role"] == "assistant" else None,
+            "created_at": r["created_at"],
+        })
+    return {"conversation_id": conv_id, "messages": messages}
 
 class FeedbackRequest(BaseModel):
     message_id: str

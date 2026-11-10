@@ -2,7 +2,7 @@
 
 The source tree is copied to a temporary directory, so the current database,
 working tree, and existing Compose volumes are never modified. The command
-also checks seeded documents, API health, and Streamlit availability.
+also checks seeded documents, API health, and the web UI.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ def free_port() -> int:
 def main() -> int:
     source = Path(__file__).resolve().parents[1]
     project_name = f"rag_clean_{uuid.uuid4().hex[:10]}"
-    api_port, ui_port, qdrant_port = free_port(), free_port(), free_port()
+    api_port, qdrant_port = free_port(), free_port()
     with tempfile.TemporaryDirectory(prefix="rag-clean-clone-") as directory:
         clone = Path(directory) / "project"
         shutil.copytree(
@@ -39,7 +39,6 @@ def main() -> int:
         compose_text = compose_file.read_text(encoding="utf-8")
         compose_text = compose_text.replace('"6333:6333"', f'"{qdrant_port}:6333"')
         compose_text = compose_text.replace('"8000:8000"', f'"{api_port}:8000"')
-        compose_text = compose_text.replace('"8501:8501"', f'"{ui_port}:8501"')
         compose_file.write_text(compose_text, encoding="utf-8")
         compose = ["docker", "compose", "-p", project_name, "up", "--build", "-d"]
         try:
@@ -60,8 +59,9 @@ def main() -> int:
             documents = requests.get(f"http://localhost:{api_port}/documents", timeout=10)
             documents.raise_for_status()
             assert len(documents.json()) >= 1
-            streamlit = requests.get(f"http://localhost:{ui_port}", timeout=10)
-            streamlit.raise_for_status()
+            web_ui = requests.get(f"http://localhost:{api_port}/", timeout=10)
+            web_ui.raise_for_status()
+            assert "Research Desk" in web_ui.text
             print(f"Clean-clone validation passed: {len(documents.json())} seeded documents.")
         finally:
             subprocess.run(

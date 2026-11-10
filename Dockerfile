@@ -23,8 +23,8 @@ RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
 # Copy application files. Secrets are excluded by .dockerignore.
 COPY . .
 
-# Expose FastAPI and Streamlit ports
-EXPOSE 8000 8501
+# FastAPI serves both the API and the web UI (frontend/)
+EXPOSE 8000
 
 # Entrypoint script starts both backend and frontend
 ENTRYPOINT ["docker-entrypoint.sh"]
