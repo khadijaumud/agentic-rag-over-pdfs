@@ -67,9 +67,14 @@ def extract_citations_from_text(text: str, fallback_chunks: Optional[List[Dict[s
 def run_single_pass_pipeline(
     question: str,
     top_k: int = 8,
-    document_filter: Optional[str] = None
+    document_filter: Optional[str] = None,
+    conversation_history: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
-    """Execute a single-pass RAG retrieval + LLM synthesis."""
+    """Execute a single-pass RAG retrieval + LLM synthesis.
+
+    Prior turns (if any) are passed to the single synthesis call so follow-up
+    questions keep their context; retrieval still happens exactly once.
+    """
     # 1. Single retrieval step
     retrieved = hybrid_search(question, document_filter=document_filter, top_k=top_k)
     
@@ -98,7 +103,12 @@ Context:
 Question: {question}
 Answer:"""
 
-    messages = [{"role": "user", "content": prompt}]
+    messages = [
+        {"role": m["role"], "content": m["content"]}
+        for m in (conversation_history or [])
+        if m.get("role") in ("user", "assistant") and m.get("content")
+    ]
+    messages.append({"role": "user", "content": prompt})
     llm_resp = call_llm_with_fallback(messages, temperature=0.0)
     answer_text = llm_resp["text"]
     if llm_resp.get("provider") == "none":

@@ -21,6 +21,7 @@ from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, UploadFile, File, BackgroundTasks, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from urllib.parse import quote
 from pydantic import BaseModel
 
@@ -57,6 +58,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- Web frontend -----------------------------------------------------------
+# The browser UI lives in ./frontend (index.html, styles.css, app.js).
+# "/" serves the page and "/static/*" serves its CSS and JS from the same origin,
+# so no CORS setup or extra server is needed.
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+
+if FRONTEND_DIR.is_dir():
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+    @app.get("/", include_in_schema=False)
+    async def web_ui():
+        """Serve the Research Desk web interface."""
+        return FileResponse(FRONTEND_DIR / "index.html", headers={"Cache-Control": "no-cache"})
+
 # Ensure database schema is initialized on import
 init_db()
 
@@ -83,36 +98,51 @@ async def health():
         "vector_indexed_chunks": vector_store.count() if vector_store.is_available() else None,
     }
 
-@app.post("/chat")
-async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="default_user", alias="X-User-Id")):
-    """Core chat endpoint used by eval.py and frontend."""
-    conv_id = req.conversation_id or f"conv_{uuid.uuid4().hex[:8]}"
-    save_conversation(conv_id, title=req.question[:50], user_id=x_user_id)
-    
+def _chat_sync(req: ChatRequest, x_user_id: str) -> Dict[str, Any]:
+    """Blocking chat core shared by POST /chat and GET /chat/stream."""
+    x_user_id = x_user_id or "default_user"
+    if not req.question or not req.question.strip():
+        raise HTTPException(status_code=422, detail="question must not be empty.")
+    # Infer mode: explicit mode in request body, or header/user-id indicating pipeline
+    mode = (req.mode or "agent").strip().lower()
+    if "pipeline" in x_user_id.lower():
+        mode = "pipeline"
+    if mode not in ("agent", "pipeline"):
+        raise HTTPException(status_code=422, detail="mode must be 'agent' or 'pipeline'.")
+    document_filter = (req.document_filter or "").strip() or None
+    if document_filter and not get_document(document_filter):
+        raise HTTPException(status_code=404, detail=f"Document filter '{document_filter}' is not an indexed document.")
+
     # Check user budget ceiling (e.g. $5.00 limit per user)
     spent = get_user_total_cost(x_user_id)
     if spent >= MAX_USER_BUDGET_USD:
         raise HTTPException(status_code=429, detail=f"User budget limit reached (${spent:.2f} spent).")
-        
-    history = get_conversation_history(conv_id, limit=6, max_tokens=MAX_HISTORY_TOKENS)
-    
-    # Infer mode: explicit mode in request body, or header/user-id indicating pipeline
-    mode = req.mode or "agent"
-    if "pipeline" in x_user_id.lower():
-        mode = "pipeline"
-        
+
+    # Validation passed: only now create/touch the conversation record.
+    conv_id = req.conversation_id or f"conv_{uuid.uuid4().hex[:8]}"
+    save_conversation(conv_id, title=req.question[:50], user_id=x_user_id)
+
+    # Only role/content reach the LLM; stored citations/steps/usage stay out of the prompt.
+    history = [
+        {"role": m["role"], "content": m["content"]}
+        for m in get_conversation_history(conv_id, limit=6, max_tokens=MAX_HISTORY_TOKENS)
+        if m.get("role") in ("user", "assistant")
+    ]
+
     # Dispatch between multi-step agent and single-pass baseline
     try:
         if mode == "pipeline":
             result = run_single_pass_pipeline(
-        req.question,
-        document_filter=req.document_filter)
+                req.question,
+                document_filter=document_filter,
+                conversation_history=history,
+            )
         else:
             result = run_agent(
-        req.question,
-        conversation_history=history,
-        document_filter=req.document_filter
-    )
+                req.question,
+                conversation_history=history,
+                document_filter=document_filter,
+            )
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
         
@@ -140,12 +170,13 @@ async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="defa
     
     # Record usage
     models = usage.get("models", [])
-    model = usage.get("model") or (models[0] if models else req.mode or "agent")
+    model = usage.get("model") or (models[0] if models else mode)
     record_usage(x_user_id, conv_id, p_tokens, c_tokens, cost, model=model)
     
     return {
         "conversation_id": conv_id,
         "message_id": asst_msg_id,
+        "mode": mode,
         "answer": result["answer"],
         "citations": result.get("citations", []),
         "agent_steps": result.get("agent_steps", []),
@@ -159,6 +190,11 @@ async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="defa
             "models": usage.get("models", []),
         }
     }
+
+@app.post("/chat")
+async def chat(req: ChatRequest, x_user_id: Optional[str] = Header(default="default_user", alias="X-User-Id")):
+    """Core chat endpoint used by eval.py and frontend."""
+    return await asyncio.to_thread(_chat_sync, req, x_user_id)
 
 @app.get("/chat/stream")
 async def chat_stream(
@@ -176,23 +212,20 @@ async def chat_stream(
         yield f"data: {json.dumps({'event': 'start', 'question': question})}\n\n"
         await asyncio.sleep(0.05)
         
-        # Run the synchronous work behind the async endpoint in a worker thread.
-        loop = asyncio.get_event_loop()
+        # Run the blocking retrieval/LLM work in a worker thread so the event loop stays responsive.
         req_obj = ChatRequest(
-    question=question,
-    conversation_id=conversation_id,
-    mode=mode,
-    document_filter=document_filter
-)
+            question=question,
+            conversation_id=conversation_id,
+            mode=mode,
+            document_filter=document_filter,
+        )
         try:
-            resp_data = await loop.run_in_executor(
-                None, lambda: asyncio.run(chat(req_obj, x_user_id))
-            )
+            resp_data = await asyncio.to_thread(_chat_sync, req_obj, x_user_id)
         except HTTPException as exc:
             yield f"data: {json.dumps({'event': 'error', 'status': exc.status_code, 'detail': exc.detail})}\n\n"
             return
-        
         except Exception:
+            logger.exception("Streaming chat failed")
             error_payload = {
                 "event": "error",
                 "status": 500,
@@ -212,7 +245,16 @@ async def chat_stream(
             await asyncio.sleep(0.01)
             
         # Stream final payload with citations and usage
-        yield f"data: {json.dumps({'event': 'done', 'citations': resp_data['citations'], 'usage': resp_data['usage']})}\n\n"
+        done_payload = {
+            "event": "done",
+            "conversation_id": resp_data["conversation_id"],
+            "message_id": resp_data["message_id"],
+            "mode": resp_data["mode"],
+            "answer": resp_data["answer"],
+            "citations": resp_data["citations"],
+            "usage": resp_data["usage"],
+        }
+        yield f"data: {json.dumps(done_payload)}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
@@ -322,6 +364,45 @@ async def get_conversation(conv_id: str):
     """Get full message history for a conversation."""
     history = get_conversation_history(conv_id, limit=50)
     return {"conversation_id": conv_id, "messages": history}
+
+@app.get("/conversations/{conv_id}/messages")
+async def get_conversation_messages(conv_id: str):
+    """Full thread for the web UI: message ids, citations, agent steps and token usage."""
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM conversations WHERE id = ?", (conv_id,))
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail="Conversation not found.")
+        cur.execute(
+            """
+            SELECT id, role, content, citations_json, agent_steps_json,
+                   prompt_tokens, completion_tokens, cost_usd, created_at
+            FROM messages
+            WHERE conversation_id = ?
+            ORDER BY created_at ASC, rowid ASC
+            """,
+            (conv_id,),
+        )
+        rows = cur.fetchall()
+    finally:
+        conn.close()
+    messages = []
+    for r in rows:
+        messages.append({
+            "id": r["id"],
+            "role": r["role"],
+            "content": r["content"],
+            "citations": json.loads(r["citations_json"]) if r["citations_json"] else [],
+            "agent_steps": json.loads(r["agent_steps_json"]) if r["agent_steps_json"] else [],
+            "usage": {
+                "prompt_tokens": r["prompt_tokens"] or 0,
+                "completion_tokens": r["completion_tokens"] or 0,
+                "usd": r["cost_usd"] or 0.0,
+            } if r["role"] == "assistant" else None,
+            "created_at": r["created_at"],
+        })
+    return {"conversation_id": conv_id, "messages": messages}
 
 class FeedbackRequest(BaseModel):
     message_id: str

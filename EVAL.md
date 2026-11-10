@@ -186,7 +186,7 @@ pipeline and increased total cost.
 ### 6. Citation passage access, per-call traces, and history budget — kept
 
 The API now exposes `GET /documents/{document}/pages/{page}` for the extracted
-passage behind a citation. The Streamlit citation panel loads and displays
+passage behind a citation. The web UI's Source panel loads and displays
 that passage instead of showing metadata only. Each agent LLM call is recorded
 as a trace step with provider, model, prompt tokens, completion tokens, and
 estimated cost. Conversation history is capped by both turns and an estimated
@@ -310,7 +310,7 @@ messages but no `ERROR`, `Traceback`, or `WARNING` lines in the final check.
 | Grounded answers, citations, passage opening | Implemented and verified | Real RWE citation and API/UI code paths |
 | FastAPI, SSE streaming, health endpoint | Implemented and verified | Health, chat, and live `start`/`token`/`done` SSE events verified |
 | Conversations, budgets, usage, safety, fallback | Implemented and verified | Persisted conversations, token-bounded history, usage records, prompt defense, Groq fallback, and tested Ollama failure handling |
-| Streamlit UI and agent trace display | Implemented; UI load checked | Citation source controls, original PDF page links, extracted passages, per-call usage display, and agent timeline are wired to API responses; a full browser citation click requires a browser PDF viewer |
+| Web UI and agent trace display | Implemented; UI load checked | Citation source controls, original PDF page links, extracted passages, per-call usage display, and agent timeline are wired to API responses; a full browser citation click requires a browser PDF viewer |
 | Docker secrets and named-volume persistence | Implemented and verified | `.dockerignore`, fresh image, upload/restart test |
 | Unit/integration tests and traces | Implemented and verified | 23 tests passed; detailed traces persist in assistant messages |
 | Evaluation and before/after scorecards | Implemented and verified | Complete agent and pipeline runs saved with zero evaluator errors |

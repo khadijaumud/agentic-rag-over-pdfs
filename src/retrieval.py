@@ -238,18 +238,11 @@ def rerank_passages(
         )
 
         results = []
-
         for candidate in candidates[:top_n]:
             item = dict(candidate)
-
-            item["rerank_score"] = (
-                float(item.get("rrf_score", 0.0))
-                / max(best_rrf, 1e-12)
-            )
-
-        results.append(item)
-
-    return results
+            item["rerank_score"] = float(item.get("rrf_score", 0.0)) / max(best_rrf, 1e-12)
+            results.append(item)
+        return results
 
 def hybrid_search(
     query: str,
